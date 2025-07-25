@@ -1,6 +1,5 @@
 # Java OCP 21 Flashcards 
 
----
 
 ### 🃏 Instance Methods vs Variables and Static Methods
 
@@ -35,24 +34,24 @@ System.out.println(member.introduce());  // I am a Child (instance method - runt
 
 ---
 
-### 🃏 Up-bounded vs Down-bounded Wildcards
+### 🃏 Generics: Bounded Wildcards (PECS Rule)
 
 **PECS Rule:** **P**roducer **E**xtends, **C**onsumer **S**uper
 
-- `? extends Number`: **READ-ONLY** - Can read items of type Number or its subtypes. Cannot add anything (except `null`).
-- `? super Number`: **WRITE-ONLY** - Can write Number or its subtypes. Cannot safely read (except `Object`).
+- `? extends T`: **READ-ONLY** - Can read items of type T or its subtypes. Cannot add anything (except `null`).
+- `? super T`: **WRITE-ONLY** - Can write T or its subtypes. Cannot safely read (except `Object`).
 
 ```java
 // Producer Extends - Reading from a collection
-List<? extends Number> numbers = List.of(1, 2.0);
-Number n = numbers.get(0);    // OK - can read as Number
+List<? extends Number> numbers = List.of(1, 2.0, 3L);
+Number n = numbers.get(0);    // ✅ OK - can read as Number
 // numbers.add(3);            // ❌ Compile error - cannot write
 
 // Consumer Super - Writing to a collection  
-List<? super Number> values = new ArrayList<Object>();
-values.add(10);       // ✅ OK - can write Number/subtypes
-values.add(3.14);     // ✅ OK - can write Number/subtypes
-// Number n = values.get(0);  // ❌ Compile error - can only read as Object
+List<? super Integer> values = new ArrayList<Number>();
+values.add(10);       // ✅ OK - can write Integer/subtypes
+values.add(42);       // ✅ OK - can write Integer/subtypes
+// Integer i = values.get(0);  // ❌ Compile error - can only read as Object
 Object obj = values.get(0);   // ✅ OK - can read as Object
 ```
 
@@ -60,9 +59,9 @@ Object obj = values.get(0);   // ✅ OK - can read as Object
 
 ---
 
-### 🃏 `super()` Constructor Rule
+### 🃏 Constructor Chaining and super()
 
-**Rule:** If a constructor does not explicitly call `super()`, the compiler inserts `super()` **only if the superclass has a no-arg constructor**.
+**Rule:** If a constructor does not explicitly call `super()` or `this()`, the compiler inserts `super()` **only if the superclass has a no-arg constructor**.
 
 ```java
 class Ancestor {
@@ -85,29 +84,41 @@ class Parent extends Ancestor {
         super("Parent: " + name);       // Explicit call required
     }
 }
+
+class Child extends Parent {
+    Child() {
+        // ✅ Implicit super() works - Parent has no-arg constructor
+        System.out.println("Child constructor");
+    }
+}
+```
+
+**Constructor execution order:**
+```java
+Child child = new Child();
+// Output:
+// Ancestor: Default parent message
+// Child constructor
 ```
 
 **💡 Learning Tip:** "No free lunch" - if parent needs arguments, children must provide them explicitly.
 
-**Q:** Does Java insert a `super()` call if you don't write one?  
-**A:** Yes, only if the superclass has a no-arg constructor. Otherwise, you must explicitly call a matching constructor.
-
 ---
 
-### 🃏 `equals()` Behaves Like `==`
+### 🃏 equals() Method Behavior
 
 When a class **does not override** `equals()` from `Object`, `.equals()` compares **references**, just like `==`.
 
 ```java
-class FamilyName {
+class Person {
     String name;
-    FamilyName(String name) { this.name = name; }
+    Person(String name) { this.name = name; }
     // No equals() override - inherits Object.equals()
 }
 
-FamilyName a = new FamilyName("Smith");
-FamilyName b = new FamilyName("Smith");
-FamilyName c = a;
+Person a = new Person("John");
+Person b = new Person("John");
+Person c = a;
 
 System.out.println(a.equals(b));  // false - different objects
 System.out.println(a == b);       // false - different objects  
@@ -121,37 +132,43 @@ System.out.println(s1.equals(s2)); // true - content comparison
 System.out.println(s1 == s2);      // false - different objects
 ```
 
-**💡 Learning Tip:** Classes that don't override equals() are doing reference comparison. StringBuilder is a famous example!
+**Examples of classes that DON'T override equals():**
+- `StringBuilder` - reference comparison only
+- `StringBuffer` - reference comparison only
+- Most custom classes (unless explicitly overridden)
 
-**Q:** When does `.equals()` behave exactly like `==`?  
-**A:** When the class does not override `equals()` from `Object`. Examples: `StringBuilder`, or any custom class that inherits `Object.equals()`.
+**💡 Learning Tip:** Classes that don't override equals() are doing reference comparison. StringBuilder is a famous example!
 
 ---
 
-### 🃏 Pattern Matching `switch` with Guarded Cases
+### 🃏 Pattern Matching with switch (Java 21)
 
-```java
-static void describe(Object obj) {
-    switch (obj) {
-        case String s when s.length() > 3 -> System.out.println("Long String: " + s);
-        case String s -> System.out.println("Short String: " + s);
-        case Integer i when i > 10 -> System.out.println("Big number: " + i);
-        case Integer i -> System.out.println("Small number: " + i);
-        default -> System.out.println("Something else: " + obj.getClass());
-    }
-}
+**Guarded Patterns:** Use `when` to add conditions to case labels.
 
-// Testing the method:
-describe("hi");      // Short String: hi
-describe("hello");   // Long String: hello  
-describe(5);         // Small number: 5
-describe(15);        // Big number: 15
-describe(3.14);      // Something else: class java.lang.Double
-```
-
-**Dangerous example - without default:**
 ```java
 static String categorize(Object obj) {
+    return switch (obj) {
+        case String s when s.length() > 5 -> "Long string: " + s;
+        case String s when s.isEmpty() -> "Empty string";
+        case String s -> "Short string: " + s;
+        case Integer i when i > 100 -> "Big number: " + i;
+        case Integer i -> "Small number: " + i;
+        case null -> "Null value";
+        default -> "Unknown type: " + obj.getClass().getSimpleName();
+    };
+}
+
+// Testing:
+System.out.println(categorize("Hi"));      // Short string: Hi
+System.out.println(categorize("Hello World")); // Long string: Hello World
+System.out.println(categorize(150));       // Big number: 150
+System.out.println(categorize(50));        // Small number: 50
+System.out.println(categorize(null));      // Null value
+```
+
+**⚠️ Dangerous Example - Missing default:**
+```java
+static String broken(Object obj) {
     return switch (obj) {
         case String s when s.startsWith("A") -> "A-String";
         case String s when s.startsWith("B") -> "B-String";
@@ -160,79 +177,212 @@ static String categorize(Object obj) {
 }
 ```
 
+**Pattern matching with records (Java 21):**
+```java
+record Point(int x, int y) {}
+
+static String describePoint(Object obj) {
+    return switch (obj) {
+        case Point(int x, int y) when x == 0 && y == 0 -> "Origin";
+        case Point(int x, int y) when x == y -> "Diagonal point";
+        case Point(int x, int y) -> "Point at (" + x + ", " + y + ")";
+        default -> "Not a point";
+    };
+}
+```
+
 **💡 Learning Tip:** Guarded patterns are checked in order. Always have a fallback case or default to avoid MatchException.
 
-**Q:** What happens if a `switch` expression has only guarded cases and none match at runtime?  
-**A:** ✅ It compiles, but at runtime, it throws a `MatchException` if no case matches and there's no default clause.
-
 ---
 
-### 🃏 Serialization and `transient` Fields
+### 🃏 Sealed Classes (Java 21)
 
-- `transient` fields are **not serialized** - they become `null` (objects) or default values (primitives).
-- On deserialization, JVM invokes **first non-serializable superclass**'s **no-arg constructor**.
+**Purpose:** Restrict which classes can extend/implement a type.
 
 ```java
-import java.io.*;
+// Sealed class - only specific classes can extend
+public sealed class Shape 
+    permits Circle, Rectangle, Triangle {
+}
 
-class Grandparent {
-    String grandparentField = "GP";
-    Grandparent() { 
-        System.out.println("Grandparent constructor called during deserialization"); 
+// Permitted subclasses must be: final, sealed, or non-sealed
+final class Circle extends Shape {
+    private final double radius;
+    Circle(double radius) { this.radius = radius; }
+}
+
+sealed class Rectangle extends Shape 
+    permits Square {
+    protected final double width, height;
+    Rectangle(double width, double height) {
+        this.width = width;
+        this.height = height;
     }
 }
 
-class Parent extends Grandparent implements Serializable {
-    String parentField = "Parent";
-    transient String secretPassword = "secret123";  // Won't be serialized
-    transient int tempValue = 42;                   // Won't be serialized
-    
-    // Constructor won't be called during deserialization (class is Serializable)
-    Parent() { 
-        System.out.println("Parent constructor - only called for new objects"); 
-    }
+final class Square extends Rectangle {
+    Square(double side) { super(side, side); }
 }
 
-// After deserialization:
-// - parentField = "Parent" ✅ (serialized)  
-// - secretPassword = null ❌ (transient)
-// - tempValue = 0 ❌ (transient, default int value)
-// - grandparentField = "GP" ✅ (set by Grandparent constructor)
+non-sealed class Triangle extends Shape {
+    // non-sealed allows further extension
+}
+
+class IsoscelesTriangle extends Triangle {} // ✅ OK - Triangle is non-sealed
+// class Pentagon extends Shape {} // ❌ Compile error - not permitted
 ```
 
-**💡 Learning Tip:** "Transient = Temporary" - these fields don't survive the serialization journey.
-
----
-
-### 🃏 Interface vs Abstract Class: Abstract Methods
-
-- **Interface:** A method without body is **implicitly abstract** (and public).
-- **Abstract Class:** A method without body must be **explicitly marked abstract**.
-
+**Sealed interfaces:**
 ```java
-interface Talker {
-    void speak();                    // Implicitly: public abstract void speak();
-    default void whisper() {         // Default methods allowed
-        System.out.println("...");
-    }
-    static void shout() {            // Static methods allowed  
-        System.out.println("HELLO!");
-    }
+public sealed interface Vehicle 
+    permits Car, Truck, Motorcycle {
 }
 
-abstract class Human {
-    abstract void walk();            // Must explicitly declare abstract
-    
-    // ❌ This would be a compile error:
-    // void run();  // Missing body and no 'abstract' keyword
-    
-    void breathe() {                 // Concrete methods allowed
-        System.out.println("Inhale, exhale");
-    }
+record Car(String model) implements Vehicle {}
+record Truck(int capacity) implements Vehicle {}
+record Motorcycle(boolean hasSidecar) implements Vehicle {}
+```
+
+**Pattern matching with sealed types:**
+```java
+static double calculateArea(Shape shape) {
+    return switch (shape) {
+        case Circle(var radius) -> Math.PI * radius * radius;
+        case Rectangle(var width, var height) -> width * height;
+        case Triangle t -> 10.0; // Simplified calculation
+        // No default needed - compiler knows all possibilities!
+    };
 }
 ```
 
-**💡 Learning Tip:** Interfaces assume you want abstract methods, abstract classes make you be explicit.
+**💡 Learning Tip:** Sealed = "Exclusive club" - only VIP classes (permits list) can join. Compiler knows all possibilities, enabling exhaustive pattern matching.
+
+---
+
+### 🃏 Records (Java 21 Features)
+
+**Basic record syntax:**
+```java
+// Compact record declaration
+public record Person(String name, int age) {
+    // Automatically generates:
+    // - Constructor: Person(String name, int age)
+    // - Accessors: name(), age()
+    // - equals(), hashCode(), toString()
+}
+
+// Usage:
+Person person = new Person("Alice", 25);
+System.out.println(person.name()); // Alice
+System.out.println(person.age());  // 25
+```
+
+**Record with validation and custom methods:**
+```java
+public record BankAccount(String accountNumber, double balance) {
+    // Compact constructor for validation
+    public BankAccount {
+        if (balance < 0) {
+            throw new IllegalArgumentException("Balance cannot be negative");
+        }
+        if (accountNumber == null || accountNumber.isBlank()) {
+            throw new IllegalArgumentException("Account number required");
+        }
+    }
+    
+    // Custom methods allowed
+    public boolean isOverdrawn() {
+        return balance < 0;
+    }
+    
+    public BankAccount withdraw(double amount) {
+        return new BankAccount(accountNumber, balance - amount);
+    }
+}
+```
+
+**Records with pattern matching:**
+```java
+record Point(int x, int y) {}
+record ColoredPoint(Point point, String color) {}
+
+static String describe(Object obj) {
+    return switch (obj) {
+        case Point(int x, int y) -> "Point at (" + x + ", " + y + ")";
+        case ColoredPoint(Point(int x, int y), String color) -> 
+            color + " point at (" + x + ", " + y + ")";
+        default -> "Unknown";
+    };
+}
+```
+
+**💡 Learning Tip:** Records = "Data class on autopilot" - automatic constructor, accessors, equals/hashCode/toString. Perfect for immutable data carriers.
+
+---
+
+### 🃏 Text Blocks (Java 21)
+
+**Multi-line strings with preserved formatting:**
+
+```java
+// Traditional string concatenation:
+String html1 = "<html>\n" +
+               "  <body>\n" +
+               "    <h1>Hello World</h1>\n" +
+               "  </body>\n" +
+               "</html>";
+
+// Text block (Java 15+):
+String html2 = """
+    <html>
+      <body>
+        <h1>Hello World</h1>
+      </body>
+    </html>
+    """;
+
+// JSON example:
+String json = """
+    {
+      "name": "John Doe",
+      "age": 30,
+      "city": "New York"
+    }
+    """;
+
+// SQL example:
+String query = """
+    SELECT users.name, users.email, orders.total
+    FROM users
+    JOIN orders ON users.id = orders.user_id
+    WHERE orders.date >= ?
+    ORDER BY orders.total DESC
+    """;
+```
+
+**Text block processing methods:**
+```java
+String textBlock = """
+    Line 1
+    Line 2
+    Line 3
+    """;
+
+// String methods work normally:
+String[] lines = textBlock.lines().toArray(String[]::new);
+String trimmed = textBlock.strip();
+boolean contains = textBlock.contains("Line 2");
+
+// Formatted text blocks:
+String template = """
+    Hello %s,
+    Your balance is $%.2f
+    Account: %s
+    """;
+String message = template.formatted("Alice", 1234.56, "ACC-123");
+```
+
+**💡 Learning Tip:** Text blocks = "What you see is what you get" - preserves formatting, perfect for HTML, JSON, SQL. Triple quotes mark the boundaries.
 
 ---
 
@@ -286,7 +436,7 @@ try (MyResource r1 = new MyResource("DB1");
 
 ---
 
-### 🃏 `protected` Access Across Packages
+### 🃏 protected Access Across Packages
 
 - **Same package:** accessible anywhere.
 - **Different package:** only accessible from **subclass**, and only via **subclass reference** (not parent reference).
@@ -325,27 +475,15 @@ public class Child extends Parent {
         // parentRef.guide();      // Still compile error - reference type matters
     }
 }
-
-// File: extended/Sibling.java
-package extended;
-
-public class Sibling extends family.Parent {
-    void testAccess() {
-        Child child = new Child();
-        // child.guide();          // ❌ Compile error! Can't access Child's protected via different subclass
-        
-        guide();                   // ✅ OK - accessing own inherited method
-    }
-}
 ```
 
 **💡 Learning Tip:** Protected across packages = "Family only, and only through your own family line."
 
 ---
 
-### 🃏 `Files.mismatch(path1, path2)`
+### 🃏 Files.mismatch() and Path Operations
 
-Compares two files **byte by byte**:
+**Files.mismatch()** - Compares two files **byte by byte**:
 - Returns **index of first mismatching byte** (0-based).
 - Returns **-1** if files are identical.
 - Throws `IOException` if paths are invalid or inaccessible.
@@ -370,15 +508,26 @@ try {
 }
 ```
 
-**Practical use cases:**
+**Other useful Path/Files operations (Java 21):**
 ```java
-// Check if files are identical:
-boolean areIdentical = Files.mismatch(path1, path2) == -1;
+// Path operations:
+Path path = Path.of("users", "documents", "file.txt");
+Path absolute = path.toAbsolutePath();
+Path parent = path.getParent();
+Path filename = path.getFileName();
 
-// Find first difference position:
-long diffPos = Files.mismatch(path1, path2);
-if (diffPos != -1) {
-    System.out.println("Files differ starting at byte " + diffPos);
+// Files operations:
+boolean exists = Files.exists(path);
+boolean readable = Files.isReadable(path);
+long size = Files.size(path);
+String content = Files.readString(path);
+List<String> lines = Files.readAllLines(path);
+
+// Directory operations:
+Files.createDirectories(Path.of("new/nested/directory"));
+try (var stream = Files.walk(Path.of("."))) {
+    stream.filter(Files::isRegularFile)
+          .forEach(System.out::println);
 }
 ```
 
@@ -386,121 +535,48 @@ if (diffPos != -1) {
 
 ---
 
-### 🃏 Pre-decrement vs Post-decrement in For Loop
+### 🃏 Arrays.binarySearch() and Arrays.compare()
 
-**Q:** In a for loop, what's the difference between `--i` and `i--` in the update expression?  
-**A:** **No difference** — the returned value of the update expression is ignored. Both decrement `i` after the loop body runs.
-
-```java
-// These are functionally identical in for loops:
-for (int i = 5; i > 0; i--) {           // Post-decrement
-    System.out.print(i + " ");          // Prints: 5 4 3 2 1
-}
-
-for (int i = 5; i > 0; --i) {           // Pre-decrement  
-    System.out.print(i + " ");          // Prints: 5 4 3 2 1
-}
-
-// The difference matters when you use the return value:
-int a = 5;
-int b = a--;    // b = 5, a = 4 (post: return then decrement)
-int c = --a;    // c = 3, a = 3 (pre: decrement then return)
-
-// But in for loops, the return value is discarded:
-for (int i = 5; i > 0; /* return value ignored */ i--) { }
-```
-
-**💡 Learning Tip:** For loop update expressions are "fire and forget" - the return value doesn't matter.
-
----
-
-### 🃏 Arrays.binarySearch() and Negative Results
-
-Binary search requires a **sorted array**. Returns:
+**Arrays.binarySearch()** - Requires **sorted array**:
 - **Positive index** if element found
 - **Negative value** if not found: `-(insertion point) - 1`
 
 ```java
-int[] sortedArray = {10, 20, 30, 40, 50};
+int[] sorted = {10, 20, 30, 40, 50};
 
 // Element found:
-int found = Arrays.binarySearch(sortedArray, 30);    // Returns 2
+int found = Arrays.binarySearch(sorted, 30);    // Returns 2
 System.out.println("Found at index: " + found);
 
 // Element not found:
-int notFound = Arrays.binarySearch(sortedArray, 25); // Returns -3
-System.out.println("Not found, result: " + notFound);
-
-// Calculate insertion point:
-int insertionPoint = -notFound - 1;  // -(-3) - 1 = 2
+int notFound = Arrays.binarySearch(sorted, 25); // Returns -3
+int insertionPoint = -notFound - 1;             // -(-3) - 1 = 2
 System.out.println("Would insert at index: " + insertionPoint);
-
-// Verify: 25 would go at index 2 to maintain sorted order
-// [10, 20, ?, 30, 40, 50] -> [10, 20, 25, 30, 40, 50]
-//          ^
-//      index 2
 ```
 
-**More examples:**
-```java
-int[] arr = {1, 3, 5, 7, 9};
-
-Arrays.binarySearch(arr, 0);   // -1  (would insert at index 0)
-Arrays.binarySearch(arr, 2);   // -2  (would insert at index 1) 
-Arrays.binarySearch(arr, 4);   // -3  (would insert at index 2)
-Arrays.binarySearch(arr, 10);  // -6  (would insert at index 5)
-```
-
-**💡 Learning Tip:** "Negative means missing" - use the formula `-(result) - 1` to find where it would go.
-
----
-
-### 🃏 Arrays.compare() vs Arrays.mismatch()
-
-Both methods compare arrays, but return different information:
-
-**Arrays.compare()** - Lexicographic comparison:
-- **0** if arrays are equal
-- **< 0** if first array is lexicographically less  
-- **> 0** if first array is lexicographically greater
-
-**Arrays.mismatch()** - Find difference location:
-- **-1** if arrays are identical
-- **index** of first differing element
+**Arrays.compare()** vs **Arrays.mismatch():**
 
 ```java
 int[] a = {1, 2, 3, 4};
 int[] b = {1, 2, 3, 4};
 int[] c = {1, 2, 5, 4};
-int[] d = {1, 2, 3};        // shorter
 
-// Equal arrays:
+// Arrays.compare() - lexicographic comparison:
 System.out.println(Arrays.compare(a, b));   // 0 (equal)
-System.out.println(Arrays.mismatch(a, b));  // -1 (no mismatch)
-
-// Different elements:
 System.out.println(Arrays.compare(a, c));   // -2 (3 < 5, so negative)
+
+// Arrays.mismatch() - find difference location:
+System.out.println(Arrays.mismatch(a, b));  // -1 (no mismatch)
 System.out.println(Arrays.mismatch(a, c));  // 2 (differ at index 2)
-
-// Different lengths:
-System.out.println(Arrays.compare(a, d));   // 1 (longer array is "greater")
-System.out.println(Arrays.mismatch(a, d));  // 3 (differ at index 3 - length difference)
 ```
 
-**Lexicographic comparison examples:**
-```java
-String[] words1 = {"apple", "banana"};
-String[] words2 = {"apple", "cherry"};
-
-Arrays.compare(words1, words2);  // negative ("banana" < "cherry")
-Arrays.mismatch(words1, words2); // 1 (differ at index 1)
-```
-
-**💡 Learning Tip:** compare() tells you "who wins", mismatch() tells you "where they differ."
+**💡 Learning Tips:** 
+- binarySearch: "Negative means missing" - use `-(result) - 1` for insertion point
+- compare() tells you "who wins", mismatch() tells you "where they differ"
 
 ---
 
-### 🃏 StringBuilder and Reference Reassignment
+### 🃏 StringBuilder Reference Behavior
 
 Java is **pass-by-value** for references. You get a copy of the reference, not the reference itself.
 
@@ -531,25 +607,11 @@ public class StringBuilderExample {
 }
 ```
 
-**Visual representation:**
-```java
-// Before method call:
-// original -----> [StringBuilder: "start"]
-
-// Inside reassignReference after reassignment:
-// original -----> [StringBuilder: "start modified first"]  (caller's object)  
-// sb -----> [StringBuilder: "completely new content"]       (method's new object)
-
-// After method returns:
-// original -----> [StringBuilder: "start modified first"]  (unchanged reference)
-// The "completely new content" object is eligible for garbage collection
-```
-
 **💡 Learning Tip:** You can change the object's content through the reference, but you can't change where the original reference points.
 
 ---
 
-### 🃏 Stream Collectors: partitioningBy and Function.identity()
+### 🃏 Stream Collectors and Function.identity()
 
 **Collectors.partitioningBy()** - Always creates exactly **2 groups** based on a boolean predicate:
 
@@ -566,12 +628,6 @@ Map<Boolean, List<String>> byLength = words.stream()
 
 System.out.println(byLength);
 // {false=[a, bb, e], true=[ccc, dddd]}
-
-// Always has both keys (true/false), even if one group is empty:
-List<String> longWords = List.of("hello", "world");
-Map<Boolean, List<String>> result = longWords.stream()
-    .collect(Collectors.partitioningBy(word -> word.length() < 3));
-// {false=[hello, world], true=[]}  // true group is empty but present
 ```
 
 **Function.identity()** - Returns a function that returns its input unchanged:
@@ -592,14 +648,6 @@ Map<String, String> fruitMap = fruits.stream()
         String::toUpperCase     // value = uppercase string
     ));
 // {apple=APPLE, banana=BANANA, cherry=CHERRY}
-
-// Map each string to its length:
-Map<String, Integer> lengthMap = fruits.stream()
-    .collect(Collectors.toMap(
-        Function.identity(),    // key = original string  
-        String::length         // value = length
-    ));
-// {apple=5, banana=6, cherry=6}
 ```
 
 **Comparison with groupingBy():**
@@ -618,31 +666,25 @@ Map<Integer, List<String>> grouped = words.stream()
 
 ---
 
-### 🃏 Stream Operations: Terminal vs Intermediate
+### 🃏 Stream Operations and Exception Handling
 
-**Intermediate Operations** - Return a new Stream (lazy evaluation):
+**Intermediate vs Terminal Operations:**
+
 ```java
+// Intermediate Operations - return Stream (lazy):
 Stream<String> words = Stream.of("apple", "banana", "cherry");
 
-Stream<String> filtered = words
+Stream<String> processed = words
     .filter(s -> s.startsWith("a"))     // Intermediate
     .map(String::toUpperCase)           // Intermediate  
     .limit(2);                          // Intermediate
     
 // Nothing executed yet - streams are lazy!
-```
 
-**Terminal Operations** - Return a result and close the stream:
-```java
+// Terminal Operations - return result and close stream:
 List<String> result = Stream.of("apple", "banana", "cherry")
     .filter(s -> s.length() > 5)       // Intermediate
     .collect(Collectors.toList());      // Terminal - execution happens here
-
-// Other terminal operations:
-long count = stream.count();                    // Terminal
-Optional<String> first = stream.findFirst();   // Terminal  
-stream.forEach(System.out::println);           // Terminal
-boolean anyMatch = stream.anyMatch(s -> s.startsWith("a")); // Terminal
 ```
 
 **Stream Reuse Error:**
@@ -651,48 +693,23 @@ Stream<String> stream = Stream.of("a", "b", "c");
 
 stream.forEach(System.out::print);  // Terminal operation - stream is consumed
 // stream.count();                  // ❌ IllegalStateException: stream has already been operated upon
-
-// Solution - create a new stream:
-List<String> data = List.of("a", "b", "c");
-data.stream().forEach(System.out::print);  // First stream
-long count = data.stream().count();         // Second stream - OK
 ```
 
-**Debugging tip - peek() for intermediate inspection:**
-```java
-List<String> result = Stream.of("apple", "Banana", "cherry")
-    .peek(s -> System.out.println("Original: " + s))        // Intermediate - for debugging
-    .filter(s -> s.length() > 5)
-    .peek(s -> System.out.println("After filter: " + s))    // Intermediate - for debugging
-    .map(String::toUpperCase)
-    .peek(s -> System.out.println("After map: " + s))       // Intermediate - for debugging
-    .collect(Collectors.toList());                           // Terminal
-```
-
-**💡 Learning Tip:** Intermediate = "keep the pipeline flowing", Terminal = "time for results".
-
----
-
-### 🃏 Stream + Optional Exception Handling
-
-Understanding when Optional methods throw exceptions:
-
+**Optional Exception Handling:**
 ```java
 private static void demonstrateOptionalExceptions() {
     // Safe stream that produces a result:
     Stream<Integer> numbers = Stream.of(1, 3, 7, 2, 8);
     Optional<Integer> maxOpt = numbers
         .filter(x -> x < 10)           // All numbers pass
-        .limit(3)                      // Take first 3: [1, 3, 7]
-        .max(Integer::compareTo);      // Find max: Optional[7]
+        .max(Integer::compareTo);      // Find max: Optional[8]
     
-    System.out.println(maxOpt.get()); // ✅ 7 - safe because Optional has value
+    System.out.println(maxOpt.get()); // ✅ 8 - safe because Optional has value
     
     // Dangerous stream that produces empty Optional:
     Stream<Integer> emptyStream = Stream.of(15, 20, 25);
     Optional<Integer> emptyOpt = emptyStream
         .filter(x -> x < 5)           // No numbers pass filter
-        .limit(3)                     // Still empty
         .max(Integer::compareTo);     // Returns Optional.empty()
     
     // System.out.println(emptyOpt.get()); // ❌ NoSuchElementException!
@@ -701,55 +718,12 @@ private static void demonstrateOptionalExceptions() {
     System.out.println(emptyOpt.orElse(-1));              // -1 (default value)
     System.out.println(emptyOpt.orElseGet(() -> 0));      // 0 (computed default)
     emptyOpt.ifPresent(System.out::println);              // Does nothing if empty
-    
-    if (emptyOpt.isPresent()) {                           // Check before get()
-        System.out.println(emptyOpt.get());
-    }
 }
 ```
 
-**Comparator examples - both correct approaches:**
-```java
-// Method 1: Integer::compareTo (recommended)
-Optional<Integer> max1 = stream.max(Integer::compareTo);
-
-// Method 2: Lambda comparator  
-Optional<Integer> max2 = stream.max((x, y) -> x.compareTo(y));
-
-// Method 3: Comparator.naturalOrder()
-Optional<Integer> max3 = stream.max(Comparator.naturalOrder());
-
-// Method 4: Simple lambda (works but less clear for complex types)
-Optional<Integer> max4 = stream.max((x, y) -> x - y);  // Can overflow!
-```
-
-**Custom object comparison:**
-```java
-class Person {
-    String name;
-    int age;
-    
-    Person(String name, int age) {
-        this.name = name;
-        this.age = age;
-    }
-}
-
-List<Person> people = List.of(
-    new Person("Alice", 25),
-    new Person("Bob", 30),
-    new Person("Charlie", 20)
-);
-
-// Find oldest person:
-Optional<Person> oldest = people.stream()
-    .max(Comparator.comparing(Person::getAge));        // Method reference
-    // .max((p1, p2) -> p1.age - p2.age);             // Lambda alternative
-
-oldest.ifPresent(p -> System.out.println("Oldest: " + p.name)); // Bob
-```
-
-**💡 Learning Tip:** Optional.get() = "Russian roulette" - always check isPresent() or use orElse()/ifPresent() for safety.
+**💡 Learning Tips:** 
+- Intermediate = "keep the pipeline flowing", Terminal = "time for results"
+- Optional.get() = "Russian roulette" - always check isPresent() or use orElse()/ifPresent()
 
 ---
 
@@ -782,3 +756,87 @@ module com.company.myapp {
 **❌ Top-Down:** Automatic module names can change, less predictable
 
 **💡 Learning Tip:** Bottom-up = "Foundation first" (solid but slow), Top-down = "Roof first" (fast but requires careful reinforcement later). Most projects should use top-down for practicality.
+
+---
+
+### 🃏 Virtual Threads vs Platform Threads
+
+**Virtual Threads (Java 21):** Lightweight threads managed by JVM, not OS.
+
+```java
+// Creating virtual threads:
+Thread.ofVirtual().start(() -> System.out.println("Virtual thread"));
+Thread.startVirtualThread(() -> System.out.println("Virtual thread"));
+
+// Platform thread (traditional):
+Thread.ofPlatform().start(() -> System.out.println("Platform thread"));
+new Thread(() -> System.out.println("Platform thread")).start();
+
+// ExecutorService with virtual threads:
+try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+    for (int i = 0; i < 1000; i++) {
+        executor.submit(() -> {
+            // Simulate I/O work
+            try { Thread.sleep(1000); } catch (InterruptedException e) {}
+            System.out.println("Task completed by " + Thread.currentThread());
+        });
+    }
+}
+```
+
+**Key Differences:**
+- **Virtual:** Millions possible, cheap creation, JVM-managed, perfect for I/O-bound tasks
+- **Platform:** ~1000s max, expensive creation, OS-managed, better for CPU-bound tasks
+
+**💡 Learning Tip:** Virtual = "Featherweight boxer" (many, fast), Platform = "Heavyweight boxer" (few, powerful).
+
+---
+
+### 🃏 CyclicBarrier - Synchronization Point
+
+**Purpose:** Multiple threads wait for each other at a common barrier point.
+
+```java
+import java.util.concurrent.CyclicBarrier;
+
+// Create barrier for 3 threads
+CyclicBarrier barrier = new CyclicBarrier(3, () -> {
+    System.out.println("All threads reached barrier! Proceeding...");
+});
+
+Runnable task = () -> {
+    String name = Thread.currentThread().getName();
+    System.out.println(name + " working...");
+    
+    try {
+        Thread.sleep(1000); // Simulate work
+        System.out.println(name + " finished work, waiting at barrier");
+        
+        barrier.await(); // Wait here until all 3 threads arrive
+        
+        System.out.println(name + " proceeding after barrier!");
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+};
+
+// Start 3 threads - they'll all wait at barrier, then proceed together
+Thread.startVirtualThread(task);
+Thread.startVirtualThread(task);  
+Thread.startVirtualThread(task);
+```
+
+**CyclicBarrier vs CountDownLatch:**
+```java
+// CyclicBarrier - reusable, threads wait for each other
+CyclicBarrier barrier = new CyclicBarrier(3);
+barrier.await(); // Thread waits for others
+// After all reach barrier, it resets for next use
+
+// CountDownLatch - one-time use, threads wait for countdown
+CountDownLatch latch = new CountDownLatch(3);
+latch.countDown(); // Decrement counter
+latch.await();     // Wait until counter reaches 0
+```
+
+**💡 Learning Tip:** CyclicBarrier = "Group photo" - everyone waits until all are ready, then proceed together. "Cyclic" = reusable for multiple rounds.
