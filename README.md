@@ -1,7 +1,5 @@
 # Java OCP 21 Flashcards 
 
----
-
 ### 🃏 Instance Methods vs Variables and Static Methods
 
 **Rule:** Instance methods are **overridden**, while **variables and static methods are hidden**.
