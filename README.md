@@ -2,62 +2,60 @@
 
 ## Table of Contents
 
-## Table of Contents
-
 - **Java 21 New Features**
-  - [Pattern Matching with switch (Java 21)](#pattern-matching-with-switch-java-21)
-  - [Sealed Classes (Java 21)](#sealed-classes-java-21)
-  - [Records (Java 21 Features)](#records-java-21-features)
-  - [Virtual Threads vs Platform Threads](#virtual-threads-vs-platform-threads)
-  - [Text Blocks (Java 21)](#text-blocks-java-21)
-  - [Stream Collectors and Function.identity()](#stream-collectors-and-functionidentity)
-  - [Module Migration Strategies: Bottom-Up vs Top-Down](#module-migration-strategies-bottom-up-vs-top-down)
-  - [ExecutorService with Lambdas - submit() Method Overloading](#executorservice-with-lambdas---submit-method-overloading)
-  - [Stream Lazy Evaluation - Intermediate vs Terminal Operations](#stream-lazy-evaluation---intermediate-vs-terminal-operations)
-  - [StringBuilder Reference Behavior](#stringbuilder-reference-behavior)
+  - [Pattern Matching with switch (Java 21)](#-pattern-matching-with-switch-java-21)
+  - [Sealed Classes (Java 21)](#-sealed-classes-java-21)
+  - [Records (Java 21 Features)](#-records-java-21-features)
+  - [Virtual Threads vs Platform Threads](#-virtual-threads-vs-platform-threads)
+  - [Text Blocks (Java 21)](#-text-blocks-java-21)
+  - [Stream Collectors and Function.identity()](#-stream-collectors-and-functionidentity)
+  - [Module Migration Strategies: Bottom-Up vs Top-Down](#-module-migration-strategies-bottom-up-vs-top-down)
+  - [ExecutorService with Lambdas - submit() Method Overloading](#-executorservice-with-lambdas---submit-method-overloading)
+  - [Stream Lazy Evaluation - Intermediate vs Terminal Operations](#-stream-lazy-evaluation---intermediate-vs-terminal-operations)
+  - [StringBuilder Reference Behavior](#-stringbuilder-reference-behavior)
 
 - **OOP and Encapsulation**
-  - [Instance Methods vs Variables and Static Methods](#instance-methods-vs-variables-and-static-methods)
-  - [Constructor Chaining and super()](#constructor-chaining-and-super)
-  - [equals() Method Behavior](#equals-method-behavior)
-  - [protected Access Across Packages](#protected-access-across-packages)
-  - [Static Field Access and Class Initialization](#static-field-access-and-class-initialization)
+  - [Instance Methods vs Variables and Static Methods](#-instance-methods-vs-variables-and-static-methods)
+  - [Constructor Chaining and super()](#-constructor-chaining-and-super)
+  - [equals() Method Behavior](#-equals-method-behavior)
+  - [protected Access Across Packages](#-protected-access-across-packages)
+  - [Static Field Access and Class Initialization](#-static-field-access-and-class-initialization)
 
 - **Streams and Functional Programming**
-  - [Stream Operations and Exception Handling](#stream-operations-and-exception-handling)
-  - [Stream Lazy Evaluation - Intermediate vs Terminal Operations](#stream-lazy-evaluation---intermediate-vs-terminal-operations)
-  - [Stream Collectors and Function.identity()](#stream-collectors-and-functionidentity)
-  - [Lambda Target Types - Runnable vs Callable](#lambda-target-types---runnable-vs-callable)
+  - [Stream Operations and Exception Handling](#-stream-operations-and-exception-handling)
+  - [Stream Lazy Evaluation - Intermediate vs Terminal Operations](#-stream-lazy-evaluation---intermediate-vs-terminal-operations)
+  - [Stream Collectors and Function.identity()](#-stream-collectors-and-functionidentity)
+  - [Lambda Target Types - Runnable vs Callable](#-lambda-target-types---runnable-vs-callable)
 
 - **Exceptions and Try-With-Resources**
-  - [Try-With-Resources and Suppressed Exceptions](#try-with-resources-and-suppressed-exceptions)
-  - [Multi-Catch and Try-With-Resources Exception Flow](#multi-catch-and-try-with-resources-exception-flow)
-  - [Exception Output Methods](#exception-output-methods)
+  - [Try-With-Resources and Suppressed Exceptions](#-try-with-resources-and-suppressed-exceptions)
+  - [Multi-Catch and Try-With-Resources Exception Flow](#-multi-catch-and-try-with-resources-exception-flow)
+  - [Exception Output Methods](#-exception-output-methods)
 
 - **Collections and Generics**
-  - [Generics: Bounded Wildcards (PECS Rule)](#generics-bounded-wildcards-pecs-rule)
-  - [Deque Stack vs Queue Operations](#deque-stack-vs-queue-operations)
-  - [Set Operations and Characteristics](#set-operations-and-characteristics)
-  - [Map Operations and Merge Method](#map-operations-and-merge-method)
+  - [Generics: Bounded Wildcards (PECS Rule)](#-generics-bounded-wildcards-pecs-rule)
+  - [Deque Stack vs Queue Operations](#-deque-stack-vs-queue-operations)
+  - [Set Operations and Characteristics](#-set-operations-and-characteristics)
+  - [Map Operations and Merge Method](#-map-operations-and-merge-method)
 
 - **Date, Time and Localization**
-  - [LocalDate and LocalTime Operations (Date-Time API)](#localdate-and-localtime-operations-date-time-api)
-  - [Localization - Locale and Resource Bundles](#localization---locale-and-resource-bundles)
+  - [LocalDate and LocalTime Operations (Date-Time API)](#-localdate-and-localtime-operations-date-time-api)
+  - [Localization - Locale and Resource Bundles](#-localization---locale-and-resource-bundles)
 
 - **I/O and NIO**
-  - [Files.mismatch() and Path Operations](#filesmismatch-and-path-operations)
-  - [Java I/O - File Reading and Writing](#java-io---file-reading-and-writing)
+  - [Files.mismatch() and Path Operations](#-filesmismatch-and-path-operations)
+  - [Java I/O - File Reading and Writing](#-java-io---file-reading-and-writing)
 
 - **Math and Wrapper APIs**
-  - [Math API and Wrapper Classes](#math-api-and-wrapper-classes)
-  - [Arrays.binarySearch() and Arrays.compare()](#arraysbinarysearch-and-arrayscompare)
+  - [Math API and Wrapper Classes](#-math-api-and-wrapper-classes)
+  - [Arrays.binarySearch() and Arrays.compare()](#-arraysbinarysearch-and-arrayscompare)
 
 - **Enums and Constants**
-  - [Enum with Fields, Methods, and Constructors](#enum-with-fields-methods-and-constructors)
+  - [Enum with Fields, Methods, and Constructors](#-enum-with-fields-methods-and-constructors)
 
 - **Modules and Migration**
-  - [Module System - Basic Declaration and Dependencies](#module-system---basic-declaration-and-dependencies)
-  - [Module Migration Strategies: Bottom-Up vs Top-Down](#module-migration-strategies-bottom-up-vs-top-down)
+  - [Module System - Basic Declaration and Dependencies](#-module-system---basic-declaration-and-dependencies)
+  - [Module Migration Strategies: Bottom-Up vs Top-Down](#-module-migration-strategies-bottom-up-vs-top-down)
 
 
 ## 🃏 Instance Methods vs Variables and Static Methods
