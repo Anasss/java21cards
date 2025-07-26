@@ -1,11 +1,11 @@
-# Java OCP 21 Flashcards 
+# Java OCP 21 Flashcards
 
-### 🃏 Instance Methods vs Variables and Static Methods
+## 🃏 Instance Methods vs Variables and Static Methods
 
 **Rule:** Instance methods are **overridden**, while **variables and static methods are hidden**.
 
-- The method invoked depends on the **actual object type** (runtime).
-- The field accessed depends on the **reference type** (compile-time).
+- The method invoked depends on the **actual object type** (runtime)
+- The field accessed depends on the **reference type** (compile-time)
 
 ```java
 class Parent {
@@ -15,7 +15,7 @@ class Parent {
 }
 
 class Child extends Parent {
-    String role = "Child";              // Field hiding
+    String role = "Child";                      // Field hiding
     static String familyName() { return "Johnson"; }  // Method hiding
     String introduce() { return "I am a Child"; }     // Method overriding
 }
@@ -33,12 +33,12 @@ System.out.println(member.introduce());  // I am a Child (instance method - runt
 
 ---
 
-### 🃏 Generics: Bounded Wildcards (PECS Rule)
+## 🃏 Generics: Bounded Wildcards (PECS Rule)
 
 **PECS Rule:** **P**roducer **E**xtends, **C**onsumer **S**uper
 
-- `? extends T`: **READ-ONLY** - Can read items of type T or its subtypes. Cannot add anything (except `null`).
-- `? super T`: **WRITE-ONLY** - Can write T or its subtypes. Cannot safely read (except `Object`).
+- `? extends T`: **READ-ONLY** - Can read items of type T or its subtypes. Cannot add anything (except `null`)
+- `? super T`: **WRITE-ONLY** - Can write T or its subtypes. Cannot safely read (except `Object`)
 
 ```java
 // Producer Extends - Reading from a collection
@@ -58,7 +58,7 @@ Object obj = values.get(0);   // ✅ OK - can read as Object
 
 ---
 
-### 🃏 Constructor Chaining and super()
+## 🃏 Constructor Chaining and super()
 
 **Rule:** If a constructor does not explicitly call `super()` or `this()`, the compiler inserts `super()` **only if the superclass has a no-arg constructor**.
 
@@ -104,7 +104,7 @@ Child child = new Child();
 
 ---
 
-### 🃏 equals() Method Behavior
+## 🃏 equals() Method Behavior
 
 When a class **does not override** `equals()` from `Object`, `.equals()` compares **references**, just like `==`.
 
@@ -140,7 +140,7 @@ System.out.println(s1 == s2);      // false - different objects
 
 ---
 
-### 🃏 Pattern Matching with switch (Java 21)
+## 🃏 Pattern Matching with switch (Java 21)
 
 **Guarded Patterns:** Use `when` to add conditions to case labels.
 
@@ -158,11 +158,11 @@ static String categorize(Object obj) {
 }
 
 // Testing:
-System.out.println(categorize("Hi"));      // Short string: Hi
+System.out.println(categorize("Hi"));         // Short string: Hi
 System.out.println(categorize("Hello World")); // Long string: Hello World
-System.out.println(categorize(150));       // Big number: 150
-System.out.println(categorize(50));        // Small number: 50
-System.out.println(categorize(null));      // Null value
+System.out.println(categorize(150));          // Big number: 150
+System.out.println(categorize(50));           // Small number: 50
+System.out.println(categorize(null));         // Null value
 ```
 
 **⚠️ Dangerous Example - Missing default:**
@@ -194,7 +194,7 @@ static String describePoint(Object obj) {
 
 ---
 
-### 🃏 Sealed Classes (Java 21)
+## 🃏 Sealed Classes (Java 21)
 
 **Purpose:** Restrict which classes can extend/implement a type.
 
@@ -258,7 +258,7 @@ static double calculateArea(Shape shape) {
 
 ---
 
-### 🃏 Records (Java 21 Features)
+## 🃏 Records (Java 21 Features)
 
 **Basic record syntax:**
 ```java
@@ -319,7 +319,7 @@ static String describe(Object obj) {
 
 ---
 
-### 🃏 Text Blocks (Java 21)
+## 🃏 Text Blocks (Java 21)
 
 **Multi-line strings with preserved formatting:**
 
@@ -385,7 +385,7 @@ String message = template.formatted("Alice", 1234.56, "ACC-123");
 
 ---
 
-### 🃏 Try-With-Resources and Suppressed Exceptions
+## 🃏 Try-With-Resources and Suppressed Exceptions
 
 The **exception in the try block is primary**. Exceptions thrown by `close()` are **suppressed** and attached to the primary exception.
 
@@ -435,10 +435,10 @@ try (MyResource r1 = new MyResource("DB1");
 
 ---
 
-### 🃏 protected Access Across Packages
+## 🃏 protected Access Across Packages
 
-- **Same package:** accessible anywhere.
-- **Different package:** only accessible from **subclass**, and only via **subclass reference** (not parent reference).
+- **Same package:** accessible anywhere
+- **Different package:** only accessible from **subclass**, and only via **subclass reference** (not parent reference)
 
 ```java
 // File: family/Parent.java
@@ -480,12 +480,12 @@ public class Child extends Parent {
 
 ---
 
-### 🃏 Files.mismatch() and Path Operations
+## 🃏 Files.mismatch() and Path Operations
 
 **Files.mismatch()** - Compares two files **byte by byte**:
-- Returns **index of first mismatching byte** (0-based).
-- Returns **-1** if files are identical.
-- Throws `IOException` if paths are invalid or inaccessible.
+- Returns **index of first mismatching byte** (0-based)
+- Returns **-1** if files are identical
+- Throws `IOException` if paths are invalid or inaccessible
 
 ```java
 import java.nio.file.*;
@@ -534,7 +534,7 @@ try (var stream = Files.walk(Path.of("."))) {
 
 ---
 
-### 🃏 Arrays.binarySearch() and Arrays.compare()
+## 🃏 Arrays.binarySearch() and Arrays.compare()
 
 **Arrays.binarySearch()** - Requires **sorted array**:
 - **Positive index** if element found
@@ -553,7 +553,7 @@ int insertionPoint = -notFound - 1;             // -(-3) - 1 = 2
 System.out.println("Would insert at index: " + insertionPoint);
 ```
 
-**Arrays.compare()** vs **Arrays.mismatch():**
+**Arrays.compare() vs Arrays.mismatch():**
 
 ```java
 int[] a = {1, 2, 3, 4};
@@ -575,7 +575,7 @@ System.out.println(Arrays.mismatch(a, c));  // 2 (differ at index 2)
 
 ---
 
-### 🃏 StringBuilder Reference Behavior
+## 🃏 StringBuilder Reference Behavior
 
 Java is **pass-by-value** for references. You get a copy of the reference, not the reference itself.
 
@@ -610,7 +610,7 @@ public class StringBuilderExample {
 
 ---
 
-### 🃏 Stream Collectors and Function.identity()
+## 🃏 Stream Collectors and Function.identity()
 
 **Collectors.partitioningBy()** - Always creates exactly **2 groups** based on a boolean predicate:
 
@@ -665,7 +665,7 @@ Map<Integer, List<String>> grouped = words.stream()
 
 ---
 
-### 🃏 Stream Operations and Exception Handling
+## 🃏 Stream Operations and Exception Handling
 
 **Intermediate vs Terminal Operations:**
 
@@ -726,9 +726,9 @@ private static void demonstrateOptionalExceptions() {
 
 ---
 
-### 🃏 Module Migration Strategies: Bottom-Up vs Top-Down
+## 🃏 Module Migration Strategies: Bottom-Up vs Top-Down
 
-**Bottom-Up:** Start with **leaf dependencies** (no dependencies), work up to main app.
+**Bottom-Up:** Start with **leaf dependencies** (no dependencies), work up to main app.  
 **Top-Down:** Start with **main application**, dependencies become automatic modules.
 
 ```java
@@ -758,7 +758,7 @@ module com.company.myapp {
 
 ---
 
-### 🃏 Virtual Threads vs Platform Threads
+## 🃏 Virtual Threads vs Platform Threads
 
 **Virtual Threads (Java 21):** Lightweight threads managed by JVM, not OS.
 
@@ -791,7 +791,7 @@ try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
 
 ---
 
-### 🃏 CyclicBarrier - Synchronization Point
+## 🃏 CyclicBarrier - Synchronization Point
 
 **Purpose:** Multiple threads wait for each other at a common barrier point.
 
@@ -842,7 +842,7 @@ latch.await();     // Wait until counter reaches 0
 
 ---
 
-### 🃏 Multi-Catch and Try-With-Resources Exception Flow
+## 🃏 Multi-Catch and Try-With-Resources Exception Flow
 
 **⚠️ This code has a COMPILE ERROR!** Let's analyze why and fix it:
 
@@ -962,9 +962,15 @@ try (Resource1 res1 = new Resource1();
 3. **Exception masking** - New exception in catch/finally masks original
 4. **Resource closing order** - Always reverse of creation order
 
+---
+
+## 🃏 Sealed Classes - Location Requirements
+
 **Rule:** Sealed classes have **strict location requirements** for permitted subclasses based on module association.
-- **Named module**: All permitted classes must be in the **same module** as the sealed class.
-- **Unnamed module**: All permitted classes must be in the **same package** as the sealed class.
+
+- **Named module**: All permitted classes must be in the **same module** as the sealed class
+- **Unnamed module**: All permitted classes must be in the **same package** as the sealed class
+
 ```java
 // Named module example
 module com.example.shapes {
@@ -973,30 +979,36 @@ module com.example.shapes {
 
 // In named module - permitted classes must be in same module
 package com.example.shapes;
-public sealed class Shape permits Circle, Rectangle { }  // ✓ Valid
+public sealed class Shape permits Circle, Rectangle { }  // ✅ Valid
 
 // In different module - compile error
 module com.other.module { }
 package com.other.shapes;
-public final class Triangle extends Shape { }  // ✗ Compile error
+public final class Triangle extends Shape { }  // ❌ Compile error
 
 // Unnamed module example (no module-info.java)
 package com.example.animals;
-public sealed class Animal permits Dog, Cat { }  // ✓ Valid
+public sealed class Animal permits Dog, Cat { }  // ✅ Valid
 
 package com.different.package;
-public final class Bird extends Animal { }  // ✗ Compile error - different package
+public final class Bird extends Animal { }  // ❌ Compile error - different package
 ```
-**💡 Learning Tip:**  
-Think "SAME BOUNDARY" - named modules enforce module boundary, unnamed modules enforce package boundary.
+
+**💡 Learning Tip:** Think "SAME BOUNDARY" - named modules enforce module boundary, unnamed modules enforce package boundary.
+
 **Q:** Can a sealed class in a named module permit a subclass from a different module?  
 **A:** No — all permitted subclasses must be in the same module as the sealed class, or a compile-time error occurs.
+
 ---
 
+## 🃏 Records - Basic Rules and Restrictions
+
 **Rule:** Records are **restricted classes** that define simple aggregates with **implicit components**.
-- Record declarations create **private final fields** and **public accessor methods**.
-- Records **extend Record class** and are **implicitly final**.
-- **Cannot be abstract, sealed, or non-sealed** and **cannot extend other classes**.
+
+- Record declarations create **private final fields** and **public accessor methods**
+- Records **extend Record class** and are **implicitly final**
+- **Cannot be abstract, sealed, or non-sealed** and **cannot extend other classes**
+
 ```java
 public record Parent(int age, String name) { }  // Record header with components
 
@@ -1016,16 +1028,22 @@ public final class Parent extends Record {
     // hashCode(), equals(), toString() provided by compiler
 }
 ```
-**💡 Learning Tip:**  
-Think "SIMPLE AGGREGATE" - records automatically generate fields, constructor, accessors, and Object methods.
+
+**💡 Learning Tip:** Think "SIMPLE AGGREGATE" - records automatically generate fields, constructor, accessors, and Object methods.
+
 **Q:** Do record accessor methods follow JavaBeans naming convention?  
 **A:** No — accessors have the same name as the field (age(), name()), not prefixed with "get".
+
 ---
 
+## 🃏 Records - Constructor Rules
+
 **Rule:** Records have **strict constructor rules** with canonical and non-canonical forms.
-- **Canonical constructor**: Takes all record components as parameters.
-- **Compact form**: No parameter list, implicit field initialization after body.
-- **Non-canonical constructors**: Must call canonical or another constructor on first line.
+
+- **Canonical constructor**: Takes all record components as parameters
+- **Compact form**: No parameter list, implicit field initialization after body
+- **Non-canonical constructors**: Must call canonical or another constructor on first line
+
 ```java
 public record Child(int age, String parent) {
     // Compact canonical constructor
@@ -1047,45 +1065,53 @@ public record Child(int age, String parent) {
 // This would cause compile error:
 public record Child(int age, String parent) {
     public Child {  // Compact form
-        age = age + 1;  // ✗ Cannot assign to parameter in compact form
+        age = age + 1;  // ❌ Cannot assign to parameter in compact form
     }
     
-    public Child(int age, String parent) {  // ✗ Cannot have both compact and regular canonical
+    public Child(int age, String parent) {  // ❌ Cannot have both compact and regular canonical
         this.age = age;
     }
 }
 ```
-**💡 Learning Tip:**  
-Remember "DELEGATE OR CANONICAL" - non-canonical constructors must delegate, canonical can be compact or regular.
+
+**💡 Learning Tip:** Remember "DELEGATE OR CANONICAL" - non-canonical constructors must delegate, canonical can be compact or regular.
+
 **Q:** Can a record have both compact and regular forms of the canonical constructor?  
 **A:** No — you can only have one canonical constructor, either in compact or regular form, not both.
+
 ---
 
+## 🃏 Records - Field and Method Restrictions
+
 **Rule:** Records have **specific restrictions** on fields, methods, and component names.
-- **Cannot declare instance fields** (static fields allowed).
-- **Cannot have instance initializers** (static initializers allowed).
-- **Cannot use reserved component names** from Object class methods.
+
+- **Cannot declare instance fields** (static fields allowed)
+- **Cannot have instance initializers** (static initializers allowed)
+- **Cannot use reserved component names** from Object class methods
+
 ```java
 public record Family(int size, String surname) {
-    static String defaultSurname = "Unknown";  // ✓ Static field allowed
-    static { defaultSurname = "Smith"; }       // ✓ Static initializer allowed
+    static String defaultSurname = "Unknown";  // ✅ Static field allowed
+    static { defaultSurname = "Smith"; }       // ✅ Static initializer allowed
     
-    // int extraField;                         // ✗ Instance field not allowed
-    // { size = 10; }                          // ✗ Instance initializer not allowed
+    // int extraField;                         // ❌ Instance field not allowed
+    // { size = 10; }                          // ❌ Instance initializer not allowed
     
-    public static String getDefaultSurname() { return defaultSurname; }  // ✓ Static method
-    public String fullInfo() { return size + " " + surname; }            // ✓ Instance method
+    public static String getDefaultSurname() { return defaultSurname; }  // ✅ Static method
+    public String fullInfo() { return size + " " + surname; }            // ✅ Instance method
     
-    // public abstract void process();         // ✗ Abstract methods not allowed
-    // public native void nativeMethod();      // ✗ Native methods not allowed
+    // public abstract void process();         // ❌ Abstract methods not allowed
+    // public native void nativeMethod();      // ❌ Native methods not allowed
 }
 
 // These component names would cause compile errors:
-// public record BadChild(String clone, int hashCode) { }     // ✗ Reserved names
-// public record BadParent(Object toString, String wait) { }  // ✗ Reserved names
+// public record BadChild(String clone, int hashCode) { }     // ❌ Reserved names
+// public record BadParent(Object toString, String wait) { }  // ❌ Reserved names
 ```
-**💡 Learning Tip:**  
-Think "NO INSTANCE STUFF" - no instance fields, initializers, or Object method names as components.
+
+**💡 Learning Tip:** Think "NO INSTANCE STUFF" - no instance fields, initializers, or Object method names as components.
+
 **Q:** Can records have static fields and methods?  
 **A:** Yes — records can have static fields, methods, and initializers, but no instance fields or initializers.
+
 ---
