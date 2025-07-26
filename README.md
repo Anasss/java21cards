@@ -1391,3 +1391,42 @@ Q: Does accessing Child.familyName initialize the Child class if familyName is d
 A: No — only Parent gets initialized because Parent declares the field. Child inherits it but doesn't declare it.
 
 ---
+
+## Deque Stack vs Queue Operations
+
+**Rule:** Deque can act as both **Stack (LIFO)** and **Queue (FIFO)** with different method behaviors.
+- **Stack operations**: `push()` and `pop()` work at the **front/head** (LIFO - Last In First Out).
+- **Queue operations**: `offer()/add()` at **tail**, `poll()/remove()` at **head** (FIFO - First In First Out).
+- **Mixed usage** can cause confusion - know which end each method operates on.
+```java
+public class FamilyLineup {
+    public static void main(String[] args) {
+        Deque<String> familyLine = new ArrayDeque<>();
+        
+        // Using Stack operations (all work at FRONT/HEAD)
+        familyLine.push("Father");    // [Father]
+        familyLine.push("Mother");    // [Mother, Father] - Mother at front
+        familyLine.push("Child");     // [Child, Mother, Father] - Child at front
+        
+        // Mixed operations - be careful!
+        System.out.println(familyLine.pollFirst());  // Child (removes from front/head)
+        System.out.println(familyLine.poll());       // Mother (poll() = pollFirst(), removes from front/head)
+        System.out.println(familyLine.pollLast());   // Father (removes from back/tail)
+        
+        // Output:
+        // Child
+        // Mother  
+        // Father
+    }
+}
+
+// Stack view: [Child, Mother, Father] (Child is top/front)
+// Queue view: [Child, Mother, Father] (Child is head, Father is tail)
+```
+**💡 Learning Tip:**
+
+Remember "STACK FRONT, QUEUE ENDS" - Stack operations (push/pop) work at front only, Queue operations work at opposite ends (add tail, remove head).
+**Q:** If you push three elements then call pollFirst(), poll(), and pollLast(), what's the removal order?  
+**A:** First element pushed, second element pushed, third element pushed - because pollFirst() and poll() both remove from head, pollLast() from tail.
+
+---
