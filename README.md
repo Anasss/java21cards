@@ -1039,12 +1039,14 @@ latch.await();     // Wait until counter reaches 0
 **💡 Learning Tip:** CyclicBarrier = "Group photo" - everyone waits until all are ready, then proceed together. "Cyclic" = reusable for multiple rounds.
 
 ---
-## Exception Output Methods
+
+## 🃏 Exception Output Methods
 
 **Rule:** Exception output methods provide **different levels of detail** for debugging.
 - **System.out.println(exception)**: Prints only **exception class name and message**.
 - **exception.printStackTrace()**: Prints **complete method call chain** with line numbers.
 - Stack trace shows the **full path** from thread start to where exception was created.
+
 ```java
 class Parent {
     void callChild() {
@@ -1078,8 +1080,9 @@ public class FamilyApp {
     }
 }
 ```
-**💡 Learning Tip:**
-Remember "PRINT vs TRACE" - println() gives you the message, printStackTrace() gives you the journey.
+
+**💡 Learning Tip:** Remember "PRINT vs TRACE" - println() gives you the message, printStackTrace() gives you the journey.
+
 **Q:** What's the difference between printing an exception and calling printStackTrace()?  
 **A:** println() shows only class name and message, printStackTrace() shows the complete method call chain with line numbers back to thread start.
 
@@ -1359,12 +1362,13 @@ public record Family(int size, String surname) {
 
 ---
 
-## Static Field Access and Class Initialization
+## 🃏 Static Field Access and Class Initialization
 
 **Rule:** Accessing a static field only initializes the class that **declares** the field, not the class through which it's accessed.
 - Class initialization is triggered by accessing a field **declared by that class**.
 - Inherited static fields do **not** trigger subclass initialization.
 - The reference used (`Child.familyName`) doesn't matter - only the **declaring class** matters.
+
 ```java
 class Parent { 
     static String familyName = "Johnson"; 
@@ -1385,19 +1389,21 @@ public class FamilyTest {
 // Output: Johnson
 // NOT: Child initializedJohnson
 ```
-**💡 Learning Tip:** 
-Remember "DECLARES WINS" - only the class that declares the static field gets initialized, even when accessed through a subclass reference.
-Q: Does accessing Child.familyName initialize the Child class if familyName is declared in Parent?
-A: No — only Parent gets initialized because Parent declares the field. Child inherits it but doesn't declare it.
+
+**💡 Learning Tip:** Remember "DECLARES WINS" - only the class that declares the static field gets initialized, even when accessed through a subclass reference.
+
+**Q:** Does accessing Child.familyName initialize the Child class if familyName is declared in Parent?  
+**A:** No — only Parent gets initialized because Parent declares the field. Child inherits it but doesn't declare it.
 
 ---
 
-## Deque Stack vs Queue Operations
+## 🃏 Deque Stack vs Queue Operations
 
 **Rule:** Deque can act as both **Stack (LIFO)** and **Queue (FIFO)** with different method behaviors.
 - **Stack operations**: `push()` and `pop()` work at the **front/head** (LIFO - Last In First Out).
 - **Queue operations**: `offer()/add()` at **tail**, `poll()/remove()` at **head** (FIFO - First In First Out).
 - **Mixed usage** can cause confusion - know which end each method operates on.
+
 ```java
 public class FamilyLineup {
     public static void main(String[] args) {
@@ -1423,10 +1429,558 @@ public class FamilyLineup {
 // Stack view: [Child, Mother, Father] (Child is top/front)
 // Queue view: [Child, Mother, Father] (Child is head, Father is tail)
 ```
-**💡 Learning Tip:**
 
-Remember "STACK FRONT, QUEUE ENDS" - Stack operations (push/pop) work at front only, Queue operations work at opposite ends (add tail, remove head).
+**💡 Learning Tip:** Remember "STACK FRONT, QUEUE ENDS" - Stack operations (push/pop) work at front only, Queue operations work at opposite ends (add tail, remove head).
+
 **Q:** If you push three elements then call pollFirst(), poll(), and pollLast(), what's the removal order?  
 **A:** First element pushed, second element pushed, third element pushed - because pollFirst() and poll() both remove from head, pollLast() from tail.
+
+---
+
+## 🃏 LocalDate and LocalTime Operations (Date-Time API)
+
+**Rule:** LocalDate/LocalTime/LocalDateTime are **immutable** - all methods return **new instances**.
+
+- **LocalDate**: Date only (year, month, day)
+- **LocalTime**: Time only (hour, minute, second, nanosecond)  
+- **LocalDateTime**: Date and time combined
+
+```java
+import java.time.*;
+
+// Creating date/time objects
+LocalDate today = LocalDate.now();                    // Current date
+LocalDate birthday = LocalDate.of(2000, 5, 15);       // May 15, 2000
+LocalTime now = LocalTime.now();                       // Current time
+LocalTime lunch = LocalTime.of(12, 30);               // 12:30 PM
+LocalDateTime meeting = LocalDateTime.of(2024, 3, 20, 14, 30); // Mar 20, 2024 at 2:30 PM
+
+// All methods return NEW instances (immutable)
+LocalDate tomorrow = today.plusDays(1);               // Add 1 day
+LocalDate nextMonth = today.plusMonths(1);            // Add 1 month
+LocalTime later = lunch.plusHours(2);                 // Add 2 hours
+LocalDate earlier = birthday.minusYears(5);           // Subtract 5 years
+
+// Original objects unchanged
+System.out.println(today);     // Still original date
+System.out.println(lunch);     // Still 12:30
+```
+
+**Period and Duration:**
+```java
+// Period - date-based amounts (years, months, days)
+Period age = Period.between(birthday, today);
+System.out.println("Age: " + age.getYears() + " years");
+
+Period twoWeeks = Period.ofDays(14);
+LocalDate vacation = today.plus(twoWeeks);
+
+// Duration - time-based amounts (hours, minutes, seconds)
+Duration workDay = Duration.ofHours(8);
+LocalTime endWork = LocalTime.of(9, 0).plus(workDay);  // 9:00 AM + 8 hours = 5:00 PM
+
+Duration between = Duration.between(lunch, now);
+System.out.println("Hours since lunch: " + between.toHours());
+```
+
+**💡 Learning Tip:** Remember "IMMUTABLE TIME" - LocalDate/Time classes never change, they always return new instances. Period for dates, Duration for time.
+
+**Q:** If you call `birthday.plusYears(10)` without assigning the result, does birthday change?  
+**A:** No — LocalDate is immutable. The method returns a new LocalDate instance, but birthday remains unchanged.
+
+---
+
+## 🃏 Map Operations and Merge Method
+
+**Rule:** Map provides various methods for **conditional updates** and **bulk operations**.
+
+- **compute methods**: Update based on key/value computation
+- **merge()**: Combine new value with existing value using a function
+- **putIfAbsent()**: Only put if key doesn't exist
+
+```java
+Map<String, Integer> scores = new HashMap<>();
+scores.put("Alice", 85);
+scores.put("Bob", 92);
+
+// merge() - combines values when key exists, inserts when key doesn't exist
+scores.merge("Alice", 10, Integer::sum);    // 85 + 10 = 95 (key exists)
+scores.merge("Charlie", 88, Integer::sum);  // Just inserts 88 (key doesn't exist)
+
+System.out.println(scores); // {Alice=95, Bob=92, Charlie=88}
+
+// computeIfAbsent - only compute if key missing
+scores.computeIfAbsent("David", k -> k.length() * 10);  // David=50 (5 chars * 10)
+scores.computeIfAbsent("Alice", k -> k.length() * 10);  // No change (Alice exists)
+
+// computeIfPresent - only compute if key exists  
+scores.computeIfPresent("Bob", (k, v) -> v + 5);        // Bob=97 (92 + 5)
+scores.computeIfPresent("Eve", (k, v) -> v + 5);        // No change (Eve doesn't exist)
+
+// compute - always computes (can return null to remove)
+scores.compute("Alice", (k, v) -> v == null ? 100 : v - 10);  // Alice=85 (95 - 10)
+```
+
+**Bulk operations:**
+```java
+Map<String, String> defaults = Map.of("theme", "dark", "lang", "en");
+Map<String, String> userPrefs = new HashMap<>();
+userPrefs.put("theme", "light");
+
+// putAll vs merge behavior
+userPrefs.putAll(defaults);  // Overwrites existing keys
+// Result: {theme=dark, lang=en} - theme overwritten!
+
+// Better: merge each entry
+defaults.forEach((k, v) -> userPrefs.merge(k, v, (old, new_) -> old));
+// Result: {theme=light, lang=en} - keeps existing theme
+```
+
+**💡 Learning Tip:** Think "MERGE = SMART PUT" - merge() handles both insertion and updating with custom logic.
+
+**Q:** What happens when you call merge() with a key that doesn't exist in the map?  
+**A:** The new value is simply inserted (put), and the merge function is not called since there's no existing value to merge with.
+
+---
+
+## 🃏 Set Operations and Characteristics
+
+**Rule:** Set implementations have **different ordering and performance characteristics**.
+
+- **HashSet**: No ordering, O(1) operations, allows null
+- **LinkedHashSet**: Insertion order, O(1) operations, allows null  
+- **TreeSet**: Natural/comparator ordering, O(log n) operations, no null
+
+```java
+// HashSet - no ordering guaranteed
+Set<String> hashSet = new HashSet<>();
+hashSet.addAll(List.of("zebra", "apple", "banana"));
+System.out.println(hashSet); // Could be: [banana, apple, zebra] (any order)
+
+// LinkedHashSet - maintains insertion order
+Set<String> linkedSet = new LinkedHashSet<>();
+linkedSet.addAll(List.of("zebra", "apple", "banana"));
+System.out.println(linkedSet); // [zebra, apple, banana] (insertion order)
+
+// TreeSet - natural ordering (sorted)
+Set<String> treeSet = new TreeSet<>();
+treeSet.addAll(List.of("zebra", "apple", "banana"));
+System.out.println(treeSet); // [apple, banana, zebra] (sorted)
+
+// Set operations
+Set<Integer> set1 = new HashSet<>(List.of(1, 2, 3, 4));
+Set<Integer> set2 = new HashSet<>(List.of(3, 4, 5, 6));
+
+// Union (all elements from both sets)
+Set<Integer> union = new HashSet<>(set1);
+union.addAll(set2);  // {1, 2, 3, 4, 5, 6}
+
+// Intersection (common elements)
+Set<Integer> intersection = new HashSet<>(set1);
+intersection.retainAll(set2);  // {3, 4}
+
+// Difference (elements in set1 but not set2)
+Set<Integer> difference = new HashSet<>(set1);
+difference.removeAll(set2);  // {1, 2}
+```
+
+**💡 Learning Tip:** Remember "HASH-LINKED-TREE" order: HashSet (no order), LinkedHashSet (insertion order), TreeSet (sorted order).
+
+**Q:** Which Set implementation should you use if you need both fast lookups and predictable iteration order?  
+**A:** LinkedHashSet — provides O(1) operations like HashSet but maintains insertion order unlike HashSet.
+
+---
+
+## 🃏 Enum with Fields, Methods, and Constructors
+
+**Rule:** Enums can have **fields, methods, and constructors** like regular classes, but with restrictions.
+
+- Enum constructors are **implicitly private**
+- Enum constants are **created first**, then other elements
+- Each enum constant can **override methods**
+
+```java
+public enum Planet {
+    // Enum constants with constructor arguments - must come first
+    MERCURY(3.303e+23, 2.4397e6),
+    VENUS(4.869e+24, 6.0518e6),
+    EARTH(5.976e+24, 6.37814e6),
+    MARS(6.421e+23, 3.3972e6);
+    
+    // Fields
+    private final double mass;   // in kilograms
+    private final double radius; // in meters
+    
+    // Constructor - implicitly private
+    Planet(double mass, double radius) {
+        this.mass = mass;
+        this.radius = radius;
+    }
+    
+    // Methods
+    public double getMass() { return mass; }
+    public double getRadius() { return radius; }
+    
+    public double surfaceGravity() {
+        final double G = 6.67300E-11;
+        return G * mass / (radius * radius);
+    }
+    
+    public double surfaceWeight(double otherMass) {
+        return otherMass * surfaceGravity();
+    }
+}
+
+// Usage:
+double earthWeight = 175.0;
+double mass = earthWeight / Planet.EARTH.surfaceGravity();
+
+for (Planet p : Planet.values()) {
+    System.out.printf("Weight on %s is %f%n", p, p.surfaceWeight(mass));
+}
+```
+
+**Enum with method overriding:**
+```java
+public enum Operation {
+    PLUS("+") {
+        public double apply(double x, double y) { return x + y; }
+    },
+    MINUS("-") {
+        public double apply(double x, double y) { return x - y; }
+    },
+    TIMES("*") {
+        public double apply(double x, double y) { return x * y; }
+    },
+    DIVIDE("/") {
+        public double apply(double x, double y) { return x / y; }
+    };
+    
+    private final String symbol;
+    
+    Operation(String symbol) { this.symbol = symbol; }
+    
+    // Abstract method - each constant must implement
+    public abstract double apply(double x, double y);
+    
+    public String getSymbol() { return symbol; }
+}
+
+// Usage:
+double result = Operation.PLUS.apply(1, 2);  // 3.0
+System.out.println(Operation.TIMES.getSymbol()); // "*"
+```
+
+**💡 Learning Tip:** Think "ENUM = SPECIAL CLASS" - enums are classes with predefined instances (constants) that can have fields, methods, and constructors.
+
+**Q:** Can you call an enum constructor directly with the `new` keyword?  
+**A:** No — enum constructors are implicitly private and can only be called when declaring enum constants.
+
+---
+
+## 🃏 Math API and Wrapper Classes
+
+**Rule:** Math class provides **static methods** for mathematical operations, while wrapper classes handle **autoboxing/unboxing**.
+
+- **Math methods**: All static, work with primitives
+- **Autoboxing**: Automatic conversion between primitives and wrapper objects
+- **Parsing**: Wrapper classes convert strings to primitives
+
+```java
+// Math class operations
+double result1 = Math.pow(2, 3);           // 8.0 (2^3)
+double result2 = Math.sqrt(16);            // 4.0
+int result3 = Math.abs(-42);               // 42
+double result4 = Math.max(10.5, 20.3);     // 20.3
+double result5 = Math.min(10.5, 20.3);     // 10.5
+double result6 = Math.round(3.7);          // 4.0
+double result7 = Math.ceil(3.1);           // 4.0 (round up)
+double result8 = Math.floor(3.9);          // 3.0 (round down)
+
+// Random number generation
+double random1 = Math.random();            // 0.0 <= x < 1.0
+int random2 = (int)(Math.random() * 6) + 1; // Dice roll: 1-6
+
+// Wrapper class autoboxing/unboxing
+Integer wrapper = 42;        // Autoboxing: int -> Integer
+int primitive = wrapper;     // Unboxing: Integer -> int
+
+// Parsing strings to primitives
+int parsed1 = Integer.parseInt("123");       // 123
+double parsed2 = Double.parseDouble("45.6"); // 45.6
+boolean parsed3 = Boolean.parseBoolean("true"); // true
+
+// Wrapper class utility methods
+String binary = Integer.toBinaryString(10);  // "1010"
+String hex = Integer.toHexString(255);       // "ff"
+Integer maxInt = Integer.MAX_VALUE;          // 2147483647
+Integer minInt = Integer.MIN_VALUE;          // -2147483648
+```
+
+**Autoboxing gotchas:**
+```java
+// Watch out for null pointer exceptions
+Integer wrapper = null;
+// int primitive = wrapper;  // ❌ NullPointerException during unboxing
+
+// Watch out for object equality vs value equality
+Integer a = 127;
+Integer b = 127;
+System.out.println(a == b);        // true (cached values -128 to 127)
+
+Integer c = 128;
+Integer d = 128; 
+System.out.println(c == d);        // false (not cached, different objects)
+System.out.println(c.equals(d));   // true (value comparison)
+```
+
+**💡 Learning Tip:** Remember "MATH = STATIC UTILITY" - Math methods are all static and work with primitives. Wrapper classes bridge primitives and objects.
+
+**Q:** What's the difference between `Math.round()`, `Math.ceil()`, and `Math.floor()`?  
+**A:** `round()` rounds to nearest integer, `ceil()` always rounds up, `floor()` always rounds down.
+
+---
+
+## 🃏 Module System - Basic Declaration and Dependencies
+
+**Rule:** Modules control **access and dependencies** through module-info.java declarations.
+
+- **requires**: Declares dependency on another module
+- **exports**: Makes packages visible to other modules
+- **provides/uses**: Service provider framework
+
+```java
+// File: module-info.java in src/main/java
+module com.company.myapp {
+    // Dependencies - modules this module needs
+    requires java.base;          // Implicit - always available
+    requires java.logging;       // Explicit dependency
+    requires transitive java.sql; // Transitive - modules depending on myapp get java.sql too
+    
+    // Exports - packages visible to other modules
+    exports com.company.myapp.api;           // Public API
+    exports com.company.myapp.util to        // Qualified export
+        com.company.client,
+        com.company.test;
+    
+    // Services
+    provides com.company.myapp.api.Service 
+        with com.company.myapp.impl.ServiceImpl;
+    uses com.company.external.Logger;
+    
+    // Reflection access
+    opens com.company.myapp.model;           // For frameworks like Spring/Hibernate
+    opens com.company.myapp.config to 
+        com.fasterxml.jackson.databind;      // Qualified opens
+}
+```
+
+**Automatic vs Named Modules:**
+```java
+// Named module (has module-info.java)
+module com.example.named {
+    requires java.base;
+    exports com.example.api;
+}
+
+// Automatic module (JAR without module-info.java on module path)
+// Name derived from JAR filename: "commons-lang3-3.12.jar" -> "commons.lang3"
+module com.example.app {
+    requires commons.lang3;      // Automatic module
+    requires java.logging;       // Platform module
+}
+
+// Unnamed module (classpath, not module path)
+// Can read all other modules but cannot be required by named modules
+```
+
+**Migration strategies:**
+```java
+// Bottom-up: Convert dependencies first
+module leaf.utility {
+    exports leaf.util;  // No requires (except implicit java.base)
+}
+
+module middle.service {
+    requires leaf.utility;
+    exports middle.service;
+}
+
+// Top-down: Convert main app first, dependencies become automatic
+module main.application {
+    requires some.library;       // Automatic module
+    requires another.framework;  // Automatic module
+    exports main.app.api;
+}
+```
+
+**💡 Learning Tip:** Think "MODULE = CONTROLLED VISIBILITY" - modules explicitly declare what they need (requires) and what they share (exports).
+
+**Q:** What's the difference between a named module and an automatic module?  
+**A:** Named modules have module-info.java and explicit declarations; automatic modules are JARs on the module path without module-info.java, getting an automatic name derived from the JAR filename.
+
+---
+
+## 🃏 Java I/O - File Reading and Writing
+
+**Rule:** Java I/O provides **multiple ways** to read/write files with different performance characteristics.
+
+- **Files.readString()/writeString()**: Simple text file operations (Java 11+)
+- **BufferedReader/Writer**: Efficient line-by-line processing
+- **FileInputStream/OutputStream**: Byte-level operations
+
+```java
+import java.nio.file.*;
+import java.io.*;
+import java.util.List;
+
+// Simple file operations (Java 11+)
+Path textFile = Path.of("data.txt");
+
+// Write string to file
+String content = "Hello\nWorld\nJava";
+Files.writeString(textFile, content);
+
+// Read entire file as string
+String fileContent = Files.readString(textFile);
+System.out.println(fileContent);
+
+// Read all lines into List
+List<String> lines = Files.readAllLines(textFile);
+lines.forEach(System.out::println);
+
+// Write lines to file
+List<String> outputLines = List.of("Line 1", "Line 2", "Line 3");
+Files.write(textFile, outputLines);
+```
+
+**Buffered I/O for large files:**
+```java
+// Efficient reading with BufferedReader
+try (BufferedReader reader = Files.newBufferedReader(Path.of("large.txt"))) {
+    String line;
+    while ((line = reader.readLine()) != null) {
+        System.out.println(line);
+    }
+}
+
+// Efficient writing with BufferedWriter
+try (BufferedWriter writer = Files.newBufferedWriter(Path.of("output.txt"))) {
+    writer.write("First line");
+    writer.newLine();
+    writer.write("Second line");
+    writer.newLine();
+}
+
+// Stream processing for very large files
+try (Stream<String> lines = Files.lines(Path.of("huge.txt"))) {
+    lines.filter(line -> line.contains("important"))
+         .map(String::toUpperCase)
+         .forEach(System.out::println);
+}
+```
+
+**Byte-level operations:**
+```java
+// Copy file using byte arrays
+try (FileInputStream in = new FileInputStream("source.dat");
+     FileOutputStream out = new FileOutputStream("dest.dat")) {
+    
+    byte[] buffer = new byte[1024];
+    int bytesRead;
+    while ((bytesRead = in.read(buffer)) != -1) {
+        out.write(buffer, 0, bytesRead);
+    }
+}
+
+// Files utility for copying
+Files.copy(Path.of("source.txt"), Path.of("destination.txt"), 
+          StandardCopyOption.REPLACE_EXISTING);
+```
+
+**💡 Learning Tip:** Remember "FILES = SIMPLE, STREAMS = CONTROL" - Files class for simple operations, streams for fine-grained control and large files.
+
+**Q:** When should you use Files.readString() vs BufferedReader?  
+**A:** Use Files.readString() for small files when you need the entire content. Use BufferedReader for large files or when processing line-by-line to avoid memory issues.
+
+---
+
+## 🃏 Localization - Locale and Resource Bundles
+
+**Rule:** Localization uses **Locale** for region/language and **ResourceBundle** for externalized text.
+
+- **Locale**: Represents language and country (e.g., en_US, fr_FR)
+- **ResourceBundle**: Loads localized text from properties files
+- **Fallback mechanism**: Searches for most specific to most general
+
+```java
+import java.util.*;
+import java.text.NumberFormat;
+import java.time.format.DateTimeFormatter;
+
+// Creating Locales
+Locale english = Locale.ENGLISH;                    // en
+Locale french = Locale.FRENCH;                      // fr  
+Locale usEnglish = Locale.US;                       // en_US
+Locale canadianFrench = Locale.CANADA_FRENCH;       // fr_CA
+Locale custom = new Locale("es", "MX");             // es_MX (Spanish Mexico)
+
+// Resource bundles (properties files)
+// messages_en.properties: greeting=Hello
+// messages_fr.properties: greeting=Bonjour
+// messages.properties: greeting=Hi (default fallback)
+
+ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.FRENCH);
+String greeting = bundle.getString("greeting");  // "Bonjour"
+
+// Fallback search order for Locale("fr", "CA"):
+// 1. messages_fr_CA.properties
+// 2. messages_fr.properties  
+// 3. messages.properties (default)
+```
+
+**Number and currency formatting:**
+```java
+double amount = 1234.56;
+
+// Number formatting per locale
+NumberFormat usNumber = NumberFormat.getNumberInstance(Locale.US);
+NumberFormat frenchNumber = NumberFormat.getNumberInstance(Locale.FRANCE);
+
+System.out.println(usNumber.format(amount));     // 1,234.56
+System.out.println(frenchNumber.format(amount)); // 1 234,56
+
+// Currency formatting
+NumberFormat usCurrency = NumberFormat.getCurrencyInstance(Locale.US);
+NumberFormat euroCurrency = NumberFormat.getCurrencyInstance(Locale.FRANCE);
+
+System.out.println(usCurrency.format(amount));   // $1,234.56
+System.out.println(euroCurrency.format(amount)); // 1 234,56 €
+
+// Percentage formatting
+NumberFormat percent = NumberFormat.getPercentInstance(Locale.US);
+System.out.println(percent.format(0.75));        // 75%
+```
+
+**Date/time formatting:**
+```java
+LocalDateTime now = LocalDateTime.now();
+
+// US format: MM/dd/yyyy
+DateTimeFormatter usFormat = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+                                             .withLocale(Locale.US);
+
+// French format: dd/MM/yyyy  
+DateTimeFormatter frenchFormat = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+                                                 .withLocale(Locale.FRANCE);
+
+System.out.println(now.format(usFormat));     // 03/20/2024
+System.out.println(now.format(frenchFormat)); // 20/03/2024
+```
+
+**💡 Learning Tip:** Think "LOCALE = WHERE, BUNDLE = WHAT" - Locale specifies location/language, ResourceBundle provides localized content with automatic fallback.
+
+**Q:** If you request a ResourceBundle for Locale("de", "CH") but only have messages_de.properties and messages.properties, which file is used?  
+**A:** messages_de.properties — the search falls back from de_CH to de to default, using the most specific match found.
 
 ---
