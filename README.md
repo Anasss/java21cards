@@ -1,177 +1,17 @@
+# Java OCP 21 Flashcards
+
 ## Table of Contents
-- [Java 21 New Features](#java-21-new-features)
-  - [🃏 Pattern Matching with switch (Java 21)](#pattern-matching-with-switch-java-21)
-  - [🃏 Text Blocks (Java 21)](#text-blocks-java-21)
-- [Object-Oriented Programming](#object-oriented-programming)
-  - [🃏 Instance Methods vs Variables and Static Methods](#instance-methods-vs-variables-and-static-methods)
-  - [🃏 Constructor Chaining and super()](#constructor-chaining-and-super)
-  - [🃏 equals() Method Behavior](#equals-method-behavior)
-  - [🃏 protected Access Across Packages](#protected-access-across-packages)
-  - [🃏 Static Field Access and Class Initialization](#static-field-access-and-class-initialization)
-- [Streams and Functional Programming](#streams-and-functional-programming)
-  - [🃏 Stream Collectors and Function.identity()](#stream-collectors-and-functionidentity)
-  - [🃏 Stream Operations and Exception Handling](#stream-operations-and-exception-handling)
-  - [🃏 Stream Lazy Evaluation - Intermediate vs Terminal Operations](#stream-lazy-evaluation---intermediate-vs-terminal-operations)
-  - [🃏 Lambda Target Types - Runnable vs Callable](#lambda-target-types---runnable-vs-callable)
-- [Exceptions and Error Handling](#exceptions-and-error-handling)
-  - [🃏 Try-With-Resources and Suppressed Exceptions](#try-with-resources-and-suppressed-exceptions)
-  - [🃏 Exception Output Methods](#exception-output-methods)
-  - [🃏 Multi-Catch and Try-With-Resources Exception Flow](#multi-catch-and-try-with-resources-exception-flow)
-- [Collections and Data Structures](#collections-and-data-structures)
-  - [🃏 Arrays.binarySearch() and Arrays.compare()](#arraysbinarysearch-and-arrayscompare)
-  - [🃏 Deque Stack vs Queue Operations](#deque-stack-vs-queue-operations)
-  - [🃏 Map Operations and Merge Method](#map-operations-and-merge-method)
-  - [🃏 Set Operations and Characteristics](#set-operations-and-characteristics)
-- [Modules and Platform](#modules-and-platform)
-  - [🃏 Module Migration Strategies: Bottom-Up vs Top-Down](#module-migration-strategies-bottom-up-vs-top-down)
-  - [🃏 Module System - Basic Declaration and Dependencies](#module-system---basic-declaration-and-dependencies)
-- [Concurrency and Threads](#concurrency-and-threads)
-  - [🃏 ExecutorService with Lambdas - submit() Method Overloading](#executorservice-with-lambdas---submit-method-overloading)
-  - [🃏 Virtual Threads vs Platform Threads](#virtual-threads-vs-platform-threads)
-  - [🃏 CyclicBarrier - Synchronization Point](#cyclicbarrier---synchronization-point)
-- [Records and Sealed Classes](#records-and-sealed-classes)
-  - [🃏 Sealed Classes (Java 21)](#sealed-classes-java-21)
-  - [🃏 Records (Java 21 Features)](#records-java-21-features)
-  - [🃏 Sealed Classes - Location Requirements](#sealed-classes---location-requirements)
-  - [🃏 Records - Basic Rules and Restrictions](#records---basic-rules-and-restrictions)
-  - [🃏 Records - Constructor Rules](#records---constructor-rules)
-  - [🃏 Records - Field and Method Restrictions](#records---field-and-method-restrictions)
-- [I/O and NIO](#io-and-nio)
-  - [🃏 Files.mismatch() and Path Operations](#filesmismatch-and-path-operations)
-  - [🃏 Java I/O - File Reading and Writing](#java-io---file-reading-and-writing)
-- [Localization and Date/Time](#localization-and-datetime)
-  - [🃏 LocalDate and LocalTime Operations (Date-Time API)](#localdate-and-localtime-operations-date-time-api)
-  - [🃏 Localization - Locale and Resource Bundles](#localization---locale-and-resource-bundles)
-- [General Java Syntax and Behavior](#general-java-syntax-and-behavior)
-  - [🃏 Generics: Bounded Wildcards (PECS Rule)](#generics-bounded-wildcards-pecs-rule)
-  - [🃏 StringBuilder Reference Behavior](#stringbuilder-reference-behavior)
-  - [🃏 Enum with Fields, Methods, and Constructors](#enum-with-fields-methods-and-constructors)
-  - [🃏 Math API and Wrapper Classes](#math-api-and-wrapper-classes)
 
-## Java 21 New Features
-
-
-## 🃏 Pattern Matching with switch (Java 21)
-
-**Guarded Patterns:** Use `when` to add conditions to case labels.
-
-```java
-static String categorize(Object obj) {
-    return switch (obj) {
-        case String s when s.length() > 5 -> "Long string: " + s;
-        case String s when s.isEmpty() -> "Empty string";
-        case String s -> "Short string: " + s;
-        case Integer i when i > 100 -> "Big number: " + i;
-        case Integer i -> "Small number: " + i;
-        case null -> "Null value";
-        default -> "Unknown type: " + obj.getClass().getSimpleName();
-    };
-}
-
-// Testing:
-System.out.println(categorize("Hi"));         // Short string: Hi
-System.out.println(categorize("Hello World")); // Long string: Hello World
-System.out.println(categorize(150));          // Big number: 150
-System.out.println(categorize(50));           // Small number: 50
-System.out.println(categorize(null));         // Null value
-```
-
-**⚠️ Dangerous Example - Missing default:**
-```java
-static String broken(Object obj) {
-    return switch (obj) {
-        case String s when s.startsWith("A") -> "A-String";
-        case String s when s.startsWith("B") -> "B-String";
-        // ❌ What if string starts with "C"? MatchException at runtime!
-    };
-}
-```
-
-**Pattern matching with records (Java 21):**
-```java
-record Point(int x, int y) {}
-
-static String describePoint(Object obj) {
-    return switch (obj) {
-        case Point(int x, int y) when x == 0 && y == 0 -> "Origin";
-        case Point(int x, int y) when x == y -> "Diagonal point";
-        case Point(int x, int y) -> "Point at (" + x + ", " + y + ")";
-        default -> "Not a point";
-    };
-}
-```
-
-**💡 Learning Tip:** Guarded patterns are checked in order. Always have a fallback case or default to avoid MatchException.
-
----
-
-## 🃏 Text Blocks (Java 21)
-
-**Multi-line strings with preserved formatting:**
-
-```java
-// Traditional string concatenation:
-String html1 = "<html>\n" +
-               "  <body>\n" +
-               "    <h1>Hello World</h1>\n" +
-               "  </body>\n" +
-               "</html>";
-
-// Text block (Java 15+):
-String html2 = """
-    <html>
-      <body>
-        <h1>Hello World</h1>
-      </body>
-    </html>
-    """;
-
-// JSON example:
-String json = """
-    {
-      "name": "John Doe",
-      "age": 30,
-      "city": "New York"
-    }
-    """;
-
-// SQL example:
-String query = """
-    SELECT users.name, users.email, orders.total
-    FROM users
-    JOIN orders ON users.id = orders.user_id
-    WHERE orders.date >= ?
-    ORDER BY orders.total DESC
-    """;
-```
-
-**Text block processing methods:**
-```java
-String textBlock = """
-    Line 1
-    Line 2
-    Line 3
-    """;
-
-// String methods work normally:
-String[] lines = textBlock.lines().toArray(String[]::new);
-String trimmed = textBlock.strip();
-boolean contains = textBlock.contains("Line 2");
-
-// Formatted text blocks:
-String template = """
-    Hello %s,
-    Your balance is $%.2f
-    Account: %s
-    """;
-String message = template.formatted("Alice", 1234.56, "ACC-123");
-```
-
-**💡 Learning Tip:** Text blocks = "What you see is what you get" - preserves formatting, perfect for HTML, JSON, SQL. Triple quotes mark the boundaries.
-
----
-
-## Object-Oriented Programming
+- **Java 21 New Features**
+- **OOP and Encapsulation**
+- **Streams and Functional Programming**
+- **Exceptions and Try-With-Resources**
+- **Collections and Generics**
+- **Date, Time and Localization**
+- **I/O and NIO**
+- **Math and Wrapper APIs**
+- **Enums and Constants**
+- **Modules and Migration**
 
 
 ## 🃏 Instance Methods vs Variables and Static Methods
@@ -204,6 +44,31 @@ System.out.println(member.introduce());  // I am a Child (instance method - runt
 
 **Q:** Does overriding a method replace the original method call even if the reference is of parent type?  
 **A:** Yes — overridden instance methods use the object type at runtime (dynamic dispatch). Static methods use the reference type (they are hidden, not overridden).
+
+---
+
+## 🃏 Generics: Bounded Wildcards (PECS Rule)
+
+**PECS Rule:** **P**roducer **E**xtends, **C**onsumer **S**uper
+
+- `? extends T`: **READ-ONLY** - Can read items of type T or its subtypes. Cannot add anything (except `null`)
+- `? super T`: **WRITE-ONLY** - Can write T or its subtypes. Cannot safely read (except `Object`)
+
+```java
+// Producer Extends - Reading from a collection
+List<? extends Number> numbers = List.of(1, 2.0, 3L);
+Number n = numbers.get(0);    // ✅ OK - can read as Number
+// numbers.add(3);            // ❌ Compile error - cannot write
+
+// Consumer Super - Writing to a collection  
+List<? super Integer> values = new ArrayList<Number>();
+values.add(10);       // ✅ OK - can write Integer/subtypes
+values.add(42);       // ✅ OK - can write Integer/subtypes
+// Integer i = values.get(0);  // ❌ Compile error - can only read as Object
+Object obj = values.get(0);   // ✅ OK - can read as Object
+```
+
+**💡 Learning Tip:** Think of wildcards as "one-way streets" - extends for reading OUT, super for writing IN.
 
 ---
 
@@ -289,6 +154,301 @@ System.out.println(s1 == s2);      // false - different objects
 
 ---
 
+## 🃏 Pattern Matching with switch (Java 21)
+
+**Guarded Patterns:** Use `when` to add conditions to case labels.
+
+```java
+static String categorize(Object obj) {
+    return switch (obj) {
+        case String s when s.length() > 5 -> "Long string: " + s;
+        case String s when s.isEmpty() -> "Empty string";
+        case String s -> "Short string: " + s;
+        case Integer i when i > 100 -> "Big number: " + i;
+        case Integer i -> "Small number: " + i;
+        case null -> "Null value";
+        default -> "Unknown type: " + obj.getClass().getSimpleName();
+    };
+}
+
+// Testing:
+System.out.println(categorize("Hi"));         // Short string: Hi
+System.out.println(categorize("Hello World")); // Long string: Hello World
+System.out.println(categorize(150));          // Big number: 150
+System.out.println(categorize(50));           // Small number: 50
+System.out.println(categorize(null));         // Null value
+```
+
+**⚠️ Dangerous Example - Missing default:**
+```java
+static String broken(Object obj) {
+    return switch (obj) {
+        case String s when s.startsWith("A") -> "A-String";
+        case String s when s.startsWith("B") -> "B-String";
+        // ❌ What if string starts with "C"? MatchException at runtime!
+    };
+}
+```
+
+**Pattern matching with records (Java 21):**
+```java
+record Point(int x, int y) {}
+
+static String describePoint(Object obj) {
+    return switch (obj) {
+        case Point(int x, int y) when x == 0 && y == 0 -> "Origin";
+        case Point(int x, int y) when x == y -> "Diagonal point";
+        case Point(int x, int y) -> "Point at (" + x + ", " + y + ")";
+        default -> "Not a point";
+    };
+}
+```
+
+**💡 Learning Tip:** Guarded patterns are checked in order. Always have a fallback case or default to avoid MatchException.
+
+---
+
+## 🃏 Sealed Classes (Java 21)
+
+**Purpose:** Restrict which classes can extend/implement a type.
+
+```java
+// Sealed class - only specific classes can extend
+public sealed class Shape 
+    permits Circle, Rectangle, Triangle {
+}
+
+// Permitted subclasses must be: final, sealed, or non-sealed
+final class Circle extends Shape {
+    private final double radius;
+    Circle(double radius) { this.radius = radius; }
+}
+
+sealed class Rectangle extends Shape 
+    permits Square {
+    protected final double width, height;
+    Rectangle(double width, double height) {
+        this.width = width;
+        this.height = height;
+    }
+}
+
+final class Square extends Rectangle {
+    Square(double side) { super(side, side); }
+}
+
+non-sealed class Triangle extends Shape {
+    // non-sealed allows further extension
+}
+
+class IsoscelesTriangle extends Triangle {} // ✅ OK - Triangle is non-sealed
+// class Pentagon extends Shape {} // ❌ Compile error - not permitted
+```
+
+**Sealed interfaces:**
+```java
+public sealed interface Vehicle 
+    permits Car, Truck, Motorcycle {
+}
+
+record Car(String model) implements Vehicle {}
+record Truck(int capacity) implements Vehicle {}
+record Motorcycle(boolean hasSidecar) implements Vehicle {}
+```
+
+**Pattern matching with sealed types:**
+```java
+static double calculateArea(Shape shape) {
+    return switch (shape) {
+        case Circle(var radius) -> Math.PI * radius * radius;
+        case Rectangle(var width, var height) -> width * height;
+        case Triangle t -> 10.0; // Simplified calculation
+        // No default needed - compiler knows all possibilities!
+    };
+}
+```
+
+**💡 Learning Tip:** Sealed = "Exclusive club" - only VIP classes (permits list) can join. Compiler knows all possibilities, enabling exhaustive pattern matching.
+
+---
+
+## 🃏 Records (Java 21 Features)
+
+**Basic record syntax:**
+```java
+// Compact record declaration
+public record Person(String name, int age) {
+    // Automatically generates:
+    // - Constructor: Person(String name, int age)
+    // - Accessors: name(), age()
+    // - equals(), hashCode(), toString()
+}
+
+// Usage:
+Person person = new Person("Alice", 25);
+System.out.println(person.name()); // Alice
+System.out.println(person.age());  // 25
+```
+
+**Record with validation and custom methods:**
+```java
+public record BankAccount(String accountNumber, double balance) {
+    // Compact constructor for validation
+    public BankAccount {
+        if (balance < 0) {
+            throw new IllegalArgumentException("Balance cannot be negative");
+        }
+        if (accountNumber == null || accountNumber.isBlank()) {
+            throw new IllegalArgumentException("Account number required");
+        }
+    }
+    
+    // Custom methods allowed
+    public boolean isOverdrawn() {
+        return balance < 0;
+    }
+    
+    public BankAccount withdraw(double amount) {
+        return new BankAccount(accountNumber, balance - amount);
+    }
+}
+```
+
+**Records with pattern matching:**
+```java
+record Point(int x, int y) {}
+record ColoredPoint(Point point, String color) {}
+
+static String describe(Object obj) {
+    return switch (obj) {
+        case Point(int x, int y) -> "Point at (" + x + ", " + y + ")";
+        case ColoredPoint(Point(int x, int y), String color) -> 
+            color + " point at (" + x + ", " + y + ")";
+        default -> "Unknown";
+    };
+}
+```
+
+**💡 Learning Tip:** Records = "Data class on autopilot" - automatic constructor, accessors, equals/hashCode/toString. Perfect for immutable data carriers.
+
+---
+
+## 🃏 Text Blocks (Java 21)
+
+**Multi-line strings with preserved formatting:**
+
+```java
+// Traditional string concatenation:
+String html1 = "<html>\n" +
+               "  <body>\n" +
+               "    <h1>Hello World</h1>\n" +
+               "  </body>\n" +
+               "</html>";
+
+// Text block (Java 15+):
+String html2 = """
+    <html>
+      <body>
+        <h1>Hello World</h1>
+      </body>
+    </html>
+    """;
+
+// JSON example:
+String json = """
+    {
+      "name": "John Doe",
+      "age": 30,
+      "city": "New York"
+    }
+    """;
+
+// SQL example:
+String query = """
+    SELECT users.name, users.email, orders.total
+    FROM users
+    JOIN orders ON users.id = orders.user_id
+    WHERE orders.date >= ?
+    ORDER BY orders.total DESC
+    """;
+```
+
+**Text block processing methods:**
+```java
+String textBlock = """
+    Line 1
+    Line 2
+    Line 3
+    """;
+
+// String methods work normally:
+String[] lines = textBlock.lines().toArray(String[]::new);
+String trimmed = textBlock.strip();
+boolean contains = textBlock.contains("Line 2");
+
+// Formatted text blocks:
+String template = """
+    Hello %s,
+    Your balance is $%.2f
+    Account: %s
+    """;
+String message = template.formatted("Alice", 1234.56, "ACC-123");
+```
+
+**💡 Learning Tip:** Text blocks = "What you see is what you get" - preserves formatting, perfect for HTML, JSON, SQL. Triple quotes mark the boundaries.
+
+---
+
+## 🃏 Try-With-Resources and Suppressed Exceptions
+
+The **exception in the try block is primary**. Exceptions thrown by `close()` are **suppressed** and attached to the primary exception.
+
+```java
+class MyResource implements AutoCloseable {
+    private String name;
+    
+    MyResource(String name) { this.name = name; }
+    
+    void doWork() throws Exception {
+        throw new RuntimeException("Work failed in " + name);
+    }
+    
+    @Override
+    public void close() throws Exception {
+        throw new RuntimeException("Close failed for " + name);
+    }
+}
+
+// Example usage:
+try (MyResource res = new MyResource("Database")) {
+    res.doWork();  // Throws primary exception
+    // close() will be called automatically and its exception suppressed
+} catch (Exception e) {
+    System.out.println("Primary: " + e.getMessage());  // Work failed in Database
+    
+    // Check suppressed exceptions:
+    for (Throwable suppressed : e.getSuppressed()) {
+        System.out.println("Suppressed: " + suppressed.getMessage()); // Close failed for Database
+    }
+}
+```
+
+**Multiple resources example:**
+```java
+try (MyResource r1 = new MyResource("DB1");
+     MyResource r2 = new MyResource("DB2")) {
+    // Resources closed in reverse order: r2.close(), then r1.close()
+    throw new RuntimeException("Business logic error");
+} catch (Exception e) {
+    // Primary: Business logic error
+    // Suppressed: Close failed for DB2, Close failed for DB1
+}
+```
+
+**💡 Learning Tip:** Primary exception is the "star of the show" - suppressed exceptions are the "supporting cast."
+
+---
+
 ## 🃏 protected Access Across Packages
 
 - **Same package:** accessible anywhere
@@ -334,43 +494,135 @@ public class Child extends Parent {
 
 ---
 
-## 🃏 Static Field Access and Class Initialization
+## 🃏 Files.mismatch() and Path Operations
 
-**Rule:** Accessing a static field only initializes the class that **declares** the field, not the class through which it's accessed.
-- Class initialization is triggered by accessing a field **declared by that class**.
-- Inherited static fields do **not** trigger subclass initialization.
-- The reference used (`Child.familyName`) doesn't matter - only the **declaring class** matters.
+**Files.mismatch()** - Compares two files **byte by byte**:
+- Returns **index of first mismatching byte** (0-based)
+- Returns **-1** if files are identical
+- Throws `IOException` if paths are invalid or inaccessible
 
 ```java
-class Parent { 
-    static String familyName = "Johnson"; 
-}
+import java.nio.file.*;
+import java.io.IOException;
 
-class Child extends Parent {
-    static { 
-        System.out.print("Child initialized"); 
-    }
+try {
+    Path file1 = Path.of("document1.txt");  // Content: "Hello World"
+    Path file2 = Path.of("document2.txt");  // Content: "Hello Mars"
+    Path file3 = Path.of("document3.txt");  // Content: "Hello World"
+    
+    long result1 = Files.mismatch(file1, file2);  // Returns 6 (index of 'W' vs 'M')
+    long result2 = Files.mismatch(file1, file3);  // Returns -1 (identical)
+    
+    System.out.println("Mismatch at byte: " + result1);  // 6
+    System.out.println("Files identical: " + (result2 == -1));  // true
+    
+} catch (IOException e) {
+    System.out.println("Error reading files: " + e.getMessage());
 }
-
-public class FamilyTest {
-    public static void main(String[] args) {
-        System.out.println(Child.familyName);  // Accesses inherited field
-    }
-}
-
-// Output: Johnson
-// NOT: Child initializedJohnson
 ```
 
-**💡 Learning Tip:** Remember "DECLARES WINS" - only the class that declares the static field gets initialized, even when accessed through a subclass reference.
+**Other useful Path/Files operations (Java 21):**
+```java
+// Path operations:
+Path path = Path.of("users", "documents", "file.txt");
+Path absolute = path.toAbsolutePath();
+Path parent = path.getParent();
+Path filename = path.getFileName();
 
-**Q:** Does accessing Child.familyName initialize the Child class if familyName is declared in Parent?  
-**A:** No — only Parent gets initialized because Parent declares the field. Child inherits it but doesn't declare it.
+// Files operations:
+boolean exists = Files.exists(path);
+boolean readable = Files.isReadable(path);
+long size = Files.size(path);
+String content = Files.readString(path);
+List<String> lines = Files.readAllLines(path);
+
+// Directory operations:
+Files.createDirectories(Path.of("new/nested/directory"));
+try (var stream = Files.walk(Path.of("."))) {
+    stream.filter(Files::isRegularFile)
+          .forEach(System.out::println);
+}
+```
+
+**💡 Learning Tip:** Mismatch = "Find the first difference" (-1 means no differences found).
 
 ---
 
-## Streams and Functional Programming
+## 🃏 Arrays.binarySearch() and Arrays.compare()
 
+**Arrays.binarySearch()** - Requires **sorted array**:
+- **Positive index** if element found
+- **Negative value** if not found: `-(insertion point) - 1`
+
+```java
+int[] sorted = {10, 20, 30, 40, 50};
+
+// Element found:
+int found = Arrays.binarySearch(sorted, 30);    // Returns 2
+System.out.println("Found at index: " + found);
+
+// Element not found:
+int notFound = Arrays.binarySearch(sorted, 25); // Returns -3
+int insertionPoint = -notFound - 1;             // -(-3) - 1 = 2
+System.out.println("Would insert at index: " + insertionPoint);
+```
+
+**Arrays.compare() vs Arrays.mismatch():**
+
+```java
+int[] a = {1, 2, 3, 4};
+int[] b = {1, 2, 3, 4};
+int[] c = {1, 2, 5, 4};
+
+// Arrays.compare() - lexicographic comparison:
+System.out.println(Arrays.compare(a, b));   // 0 (equal)
+System.out.println(Arrays.compare(a, c));   // -2 (3 < 5, so negative)
+
+// Arrays.mismatch() - find difference location:
+System.out.println(Arrays.mismatch(a, b));  // -1 (no mismatch)
+System.out.println(Arrays.mismatch(a, c));  // 2 (differ at index 2)
+```
+
+**💡 Learning Tips:** 
+- binarySearch: "Negative means missing" - use `-(result) - 1` for insertion point
+- compare() tells you "who wins", mismatch() tells you "where they differ"
+
+---
+
+## 🃏 StringBuilder Reference Behavior
+
+Java is **pass-by-value** for references. You get a copy of the reference, not the reference itself.
+
+```java
+public class StringBuilderExample {
+    static void modifyContent(StringBuilder sb) {
+        sb.append(" modified");     // ✅ Modifies the object - caller sees this
+        System.out.println("Inside method after append: " + sb);
+    }
+    
+    static void reassignReference(StringBuilder sb) {
+        sb.append(" first");        // ✅ Modifies original object
+        sb = new StringBuilder("completely new");  // ❌ Only changes local copy of reference
+        sb.append(" content");      // ❌ Modifies the new object, not original
+        System.out.println("Inside method after reassign: " + sb);
+    }
+    
+    public static void main(String[] args) {
+        StringBuilder original = new StringBuilder("start");
+        
+        modifyContent(original);
+        System.out.println("After modifyContent: " + original);  // "start modified"
+        
+        reassignReference(original);  
+        System.out.println("After reassignReference: " + original);  // "start modified first"
+        // Note: "completely new content" is lost!
+    }
+}
+```
+
+**💡 Learning Tip:** You can change the object's content through the reference, but you can't change where the original reference points.
+
+---
 
 ## 🃏 Stream Collectors and Function.identity()
 
@@ -620,56 +872,185 @@ public interface Callable<V> {
 
 ---
 
-## Exceptions and Error Handling
+## 🃏 ExecutorService with Lambdas - submit() Method Overloading
 
+**Rule:** ExecutorService.submit() is overloaded to handle both Runnable and Callable, with different return types.
 
-## 🃏 Try-With-Resources and Suppressed Exceptions
-
-The **exception in the try block is primary**. Exceptions thrown by `close()` are **suppressed** and attached to the primary exception.
+- `submit(Runnable)` → `Future<?>` (result is always null)
+- `submit(Callable<T>)` → `Future<T>` (result is of type T)
 
 ```java
-class MyResource implements AutoCloseable {
-    private String name;
-    
-    MyResource(String name) { this.name = name; }
-    
-    void doWork() throws Exception {
-        throw new RuntimeException("Work failed in " + name);
+ExecutorService executor = Executors.newFixedThreadPool(2);
+
+// Lambda matches Runnable - no return value
+Future<?> future1 = executor.submit(() -> {
+    System.out.println("Task executing...");
+    // No return statement
+});
+
+// Lambda matches Callable<String> - returns String
+Future<String> future2 = executor.submit(() -> {
+    Thread.sleep(1000);
+    return "Task completed!";  // Returns String
+});
+
+// Lambda matches Callable<Integer> - returns Integer
+Future<Integer> future3 = executor.submit(() -> {
+    int sum = 0;
+    for (int i = 1; i <= 10; i++) {
+        sum += i;
     }
-    
-    @Override
-    public void close() throws Exception {
-        throw new RuntimeException("Close failed for " + name);
-    }
+    return sum;  // Returns Integer
+});
+
+// Retrieving results:
+try {
+    Object result1 = future1.get();     // null (Runnable returns nothing)
+    String result2 = future2.get();     // "Task completed!"
+    Integer result3 = future3.get();    // 55
+} catch (Exception e) {
+    e.printStackTrace();
+}
+```
+
+**Common Pitfalls:**
+```java
+// Pitfall 1: Forgetting return statement for Callable
+Callable<String> badTask = () -> {
+    String result = "Hello";
+    // Missing return statement - compile error!
+};
+
+// Pitfall 2: Runnable with return statement
+Runnable badRunnable = () -> {
+    return "Hello";  // ❌ Runnable must return void
+};
+
+// Pitfall 3: Ambiguous context
+// var task = () -> "Hello";  // ❌ Compiler can't infer target type
+Callable<String> task = () -> "Hello";  // ✅ Explicit target type
+```
+
+**💡 Learning Tip:** "Future tells the future" - Future<?> means no meaningful result, Future<T> means result of type T is coming.
+
+**Q:** What's the difference between submit(Runnable) and submit(Callable) return types?  
+**A:** submit(Runnable) returns Future<?> with null result, while submit(Callable<T>) returns Future<T> with a meaningful result of type T.
+
+---
+
+## 🃏 Module Migration Strategies: Bottom-Up vs Top-Down
+
+**Bottom-Up:** Start with **leaf dependencies** (no dependencies), work up to main app.  
+**Top-Down:** Start with **main application**, dependencies become automatic modules.
+
+```java
+// BOTTOM-UP: Convert dependencies first
+// Step 1: UtilLib (leaf) -> DatabaseLib -> ServiceLayer -> MainApp
+module com.company.util {
+    exports com.company.util.string;
+    // No requires - leaf module
 }
 
-// Example usage:
-try (MyResource res = new MyResource("Database")) {
-    res.doWork();  // Throws primary exception
-    // close() will be called automatically and its exception suppressed
-} catch (Exception e) {
-    System.out.println("Primary: " + e.getMessage());  // Work failed in Database
-    
-    // Check suppressed exceptions:
-    for (Throwable suppressed : e.getSuppressed()) {
-        System.out.println("Suppressed: " + suppressed.getMessage()); // Close failed for Database
+// TOP-DOWN: Convert main app first, deps are automatic modules
+module com.company.myapp {
+    requires service.layer;      // automatic module from service-layer.jar
+    requires commons.lang3;      // automatic module from commons-lang3.jar
+}
+
+// Automatic module naming: "jackson-core-2.13.jar" -> "jackson.core"
+```
+
+**✅ Bottom-Up:** Guaranteed to work, lower risk, clear dependencies  
+**❌ Bottom-Up:** Slower benefits, need to wait for third-party libs
+
+**✅ Top-Down:** Quick wins, immediate benefits, independent of third parties  
+**❌ Top-Down:** Automatic module names can change, less predictable
+
+**💡 Learning Tip:** Bottom-up = "Foundation first" (solid but slow), Top-down = "Roof first" (fast but requires careful reinforcement later). Most projects should use top-down for practicality.
+
+---
+
+## 🃏 Virtual Threads vs Platform Threads
+
+**Virtual Threads (Java 21):** Lightweight threads managed by JVM, not OS.
+
+```java
+// Creating virtual threads:
+Thread.ofVirtual().start(() -> System.out.println("Virtual thread"));
+Thread.startVirtualThread(() -> System.out.println("Virtual thread"));
+
+// Platform thread (traditional):
+Thread.ofPlatform().start(() -> System.out.println("Platform thread"));
+new Thread(() -> System.out.println("Platform thread")).start();
+
+// ExecutorService with virtual threads:
+try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+    for (int i = 0; i < 1000; i++) {
+        executor.submit(() -> {
+            // Simulate I/O work
+            try { Thread.sleep(1000); } catch (InterruptedException e) {}
+            System.out.println("Task completed by " + Thread.currentThread());
+        });
     }
 }
 ```
 
-**Multiple resources example:**
+**Key Differences:**
+- **Virtual:** Millions possible, cheap creation, JVM-managed, perfect for I/O-bound tasks
+- **Platform:** ~1000s max, expensive creation, OS-managed, better for CPU-bound tasks
+
+**💡 Learning Tip:** Virtual = "Featherweight boxer" (many, fast), Platform = "Heavyweight boxer" (few, powerful).
+
+---
+
+## 🃏 CyclicBarrier - Synchronization Point
+
+**Purpose:** Multiple threads wait for each other at a common barrier point.
+
 ```java
-try (MyResource r1 = new MyResource("DB1");
-     MyResource r2 = new MyResource("DB2")) {
-    // Resources closed in reverse order: r2.close(), then r1.close()
-    throw new RuntimeException("Business logic error");
-} catch (Exception e) {
-    // Primary: Business logic error
-    // Suppressed: Close failed for DB2, Close failed for DB1
-}
+import java.util.concurrent.CyclicBarrier;
+
+// Create barrier for 3 threads
+CyclicBarrier barrier = new CyclicBarrier(3, () -> {
+    System.out.println("All threads reached barrier! Proceeding...");
+});
+
+Runnable task = () -> {
+    String name = Thread.currentThread().getName();
+    System.out.println(name + " working...");
+    
+    try {
+        Thread.sleep(1000); // Simulate work
+        System.out.println(name + " finished work, waiting at barrier");
+        
+        barrier.await(); // Wait here until all 3 threads arrive
+        
+        System.out.println(name + " proceeding after barrier!");
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+};
+
+// Start 3 threads - they'll all wait at barrier, then proceed together
+Thread.startVirtualThread(task);
+Thread.startVirtualThread(task);  
+Thread.startVirtualThread(task);
 ```
 
-**💡 Learning Tip:** Primary exception is the "star of the show" - suppressed exceptions are the "supporting cast."
+**CyclicBarrier vs CountDownLatch:**
+```java
+// CyclicBarrier - reusable, threads wait for each other
+CyclicBarrier barrier = new CyclicBarrier(3);
+barrier.await(); // Thread waits for others
+// After all reach barrier, it resets for next use
+
+// CountDownLatch - one-time use, threads wait for countdown
+CountDownLatch latch = new CountDownLatch(3);
+latch.countDown(); // Decrement counter
+latch.await();     // Wait until counter reaches 0
+```
+
+**💡 Learning Tip:** CyclicBarrier = "Group photo" - everyone waits until all are ready, then proceed together. "Cyclic" = reusable for multiple rounds.
 
 ---
 
@@ -843,587 +1224,6 @@ try (Resource1 res1 = new Resource1();
 
 ---
 
-## Collections and Data Structures
-
-
-## 🃏 Arrays.binarySearch() and Arrays.compare()
-
-**Arrays.binarySearch()** - Requires **sorted array**:
-- **Positive index** if element found
-- **Negative value** if not found: `-(insertion point) - 1`
-
-```java
-int[] sorted = {10, 20, 30, 40, 50};
-
-// Element found:
-int found = Arrays.binarySearch(sorted, 30);    // Returns 2
-System.out.println("Found at index: " + found);
-
-// Element not found:
-int notFound = Arrays.binarySearch(sorted, 25); // Returns -3
-int insertionPoint = -notFound - 1;             // -(-3) - 1 = 2
-System.out.println("Would insert at index: " + insertionPoint);
-```
-
-**Arrays.compare() vs Arrays.mismatch():**
-
-```java
-int[] a = {1, 2, 3, 4};
-int[] b = {1, 2, 3, 4};
-int[] c = {1, 2, 5, 4};
-
-// Arrays.compare() - lexicographic comparison:
-System.out.println(Arrays.compare(a, b));   // 0 (equal)
-System.out.println(Arrays.compare(a, c));   // -2 (3 < 5, so negative)
-
-// Arrays.mismatch() - find difference location:
-System.out.println(Arrays.mismatch(a, b));  // -1 (no mismatch)
-System.out.println(Arrays.mismatch(a, c));  // 2 (differ at index 2)
-```
-
-**💡 Learning Tips:** 
-- binarySearch: "Negative means missing" - use `-(result) - 1` for insertion point
-- compare() tells you "who wins", mismatch() tells you "where they differ"
-
----
-
-## 🃏 Deque Stack vs Queue Operations
-
-**Rule:** Deque can act as both **Stack (LIFO)** and **Queue (FIFO)** with different method behaviors.
-- **Stack operations**: `push()` and `pop()` work at the **front/head** (LIFO - Last In First Out).
-- **Queue operations**: `offer()/add()` at **tail**, `poll()/remove()` at **head** (FIFO - First In First Out).
-- **Mixed usage** can cause confusion - know which end each method operates on.
-
-```java
-public class FamilyLineup {
-    public static void main(String[] args) {
-        Deque<String> familyLine = new ArrayDeque<>();
-        
-        // Using Stack operations (all work at FRONT/HEAD)
-        familyLine.push("Father");    // [Father]
-        familyLine.push("Mother");    // [Mother, Father] - Mother at front
-        familyLine.push("Child");     // [Child, Mother, Father] - Child at front
-        
-        // Mixed operations - be careful!
-        System.out.println(familyLine.pollFirst());  // Child (removes from front/head)
-        System.out.println(familyLine.poll());       // Mother (poll() = pollFirst(), removes from front/head)
-        System.out.println(familyLine.pollLast());   // Father (removes from back/tail)
-        
-        // Output:
-        // Child
-        // Mother  
-        // Father
-    }
-}
-
-// Stack view: [Child, Mother, Father] (Child is top/front)
-// Queue view: [Child, Mother, Father] (Child is head, Father is tail)
-```
-
-**💡 Learning Tip:** Remember "STACK FRONT, QUEUE ENDS" - Stack operations (push/pop) work at front only, Queue operations work at opposite ends (add tail, remove head).
-
-**Q:** If you push three elements then call pollFirst(), poll(), and pollLast(), what's the removal order?  
-**A:** First element pushed, second element pushed, third element pushed - because pollFirst() and poll() both remove from head, pollLast() from tail.
-
----
-
-## 🃏 Map Operations and Merge Method
-
-**Rule:** Map provides various methods for **conditional updates** and **bulk operations**.
-
-- **compute methods**: Update based on key/value computation
-- **merge()**: Combine new value with existing value using a function
-- **putIfAbsent()**: Only put if key doesn't exist
-
-```java
-Map<String, Integer> scores = new HashMap<>();
-scores.put("Alice", 85);
-scores.put("Bob", 92);
-
-// merge() - combines values when key exists, inserts when key doesn't exist
-scores.merge("Alice", 10, Integer::sum);    // 85 + 10 = 95 (key exists)
-scores.merge("Charlie", 88, Integer::sum);  // Just inserts 88 (key doesn't exist)
-
-System.out.println(scores); // {Alice=95, Bob=92, Charlie=88}
-
-// computeIfAbsent - only compute if key missing
-scores.computeIfAbsent("David", k -> k.length() * 10);  // David=50 (5 chars * 10)
-scores.computeIfAbsent("Alice", k -> k.length() * 10);  // No change (Alice exists)
-
-// computeIfPresent - only compute if key exists  
-scores.computeIfPresent("Bob", (k, v) -> v + 5);        // Bob=97 (92 + 5)
-scores.computeIfPresent("Eve", (k, v) -> v + 5);        // No change (Eve doesn't exist)
-
-// compute - always computes (can return null to remove)
-scores.compute("Alice", (k, v) -> v == null ? 100 : v - 10);  // Alice=85 (95 - 10)
-```
-
-**Bulk operations:**
-```java
-Map<String, String> defaults = Map.of("theme", "dark", "lang", "en");
-Map<String, String> userPrefs = new HashMap<>();
-userPrefs.put("theme", "light");
-
-// putAll vs merge behavior
-userPrefs.putAll(defaults);  // Overwrites existing keys
-// Result: {theme=dark, lang=en} - theme overwritten!
-
-// Better: merge each entry
-defaults.forEach((k, v) -> userPrefs.merge(k, v, (old, new_) -> old));
-// Result: {theme=light, lang=en} - keeps existing theme
-```
-
-**💡 Learning Tip:** Think "MERGE = SMART PUT" - merge() handles both insertion and updating with custom logic.
-
-**Q:** What happens when you call merge() with a key that doesn't exist in the map?  
-**A:** The new value is simply inserted (put), and the merge function is not called since there's no existing value to merge with.
-
----
-
-## 🃏 Set Operations and Characteristics
-
-**Rule:** Set implementations have **different ordering and performance characteristics**.
-
-- **HashSet**: No ordering, O(1) operations, allows null
-- **LinkedHashSet**: Insertion order, O(1) operations, allows null  
-- **TreeSet**: Natural/comparator ordering, O(log n) operations, no null
-
-```java
-// HashSet - no ordering guaranteed
-Set<String> hashSet = new HashSet<>();
-hashSet.addAll(List.of("zebra", "apple", "banana"));
-System.out.println(hashSet); // Could be: [banana, apple, zebra] (any order)
-
-// LinkedHashSet - maintains insertion order
-Set<String> linkedSet = new LinkedHashSet<>();
-linkedSet.addAll(List.of("zebra", "apple", "banana"));
-System.out.println(linkedSet); // [zebra, apple, banana] (insertion order)
-
-// TreeSet - natural ordering (sorted)
-Set<String> treeSet = new TreeSet<>();
-treeSet.addAll(List.of("zebra", "apple", "banana"));
-System.out.println(treeSet); // [apple, banana, zebra] (sorted)
-
-// Set operations
-Set<Integer> set1 = new HashSet<>(List.of(1, 2, 3, 4));
-Set<Integer> set2 = new HashSet<>(List.of(3, 4, 5, 6));
-
-// Union (all elements from both sets)
-Set<Integer> union = new HashSet<>(set1);
-union.addAll(set2);  // {1, 2, 3, 4, 5, 6}
-
-// Intersection (common elements)
-Set<Integer> intersection = new HashSet<>(set1);
-intersection.retainAll(set2);  // {3, 4}
-
-// Difference (elements in set1 but not set2)
-Set<Integer> difference = new HashSet<>(set1);
-difference.removeAll(set2);  // {1, 2}
-```
-
-**💡 Learning Tip:** Remember "HASH-LINKED-TREE" order: HashSet (no order), LinkedHashSet (insertion order), TreeSet (sorted order).
-
-**Q:** Which Set implementation should you use if you need both fast lookups and predictable iteration order?  
-**A:** LinkedHashSet — provides O(1) operations like HashSet but maintains insertion order unlike HashSet.
-
----
-
-## Modules and Platform
-
-
-## 🃏 Module Migration Strategies: Bottom-Up vs Top-Down
-
-**Bottom-Up:** Start with **leaf dependencies** (no dependencies), work up to main app.  
-**Top-Down:** Start with **main application**, dependencies become automatic modules.
-
-```java
-// BOTTOM-UP: Convert dependencies first
-// Step 1: UtilLib (leaf) -> DatabaseLib -> ServiceLayer -> MainApp
-module com.company.util {
-    exports com.company.util.string;
-    // No requires - leaf module
-}
-
-// TOP-DOWN: Convert main app first, deps are automatic modules
-module com.company.myapp {
-    requires service.layer;      // automatic module from service-layer.jar
-    requires commons.lang3;      // automatic module from commons-lang3.jar
-}
-
-// Automatic module naming: "jackson-core-2.13.jar" -> "jackson.core"
-```
-
-**✅ Bottom-Up:** Guaranteed to work, lower risk, clear dependencies  
-**❌ Bottom-Up:** Slower benefits, need to wait for third-party libs
-
-**✅ Top-Down:** Quick wins, immediate benefits, independent of third parties  
-**❌ Top-Down:** Automatic module names can change, less predictable
-
-**💡 Learning Tip:** Bottom-up = "Foundation first" (solid but slow), Top-down = "Roof first" (fast but requires careful reinforcement later). Most projects should use top-down for practicality.
-
----
-
-## 🃏 Module System - Basic Declaration and Dependencies
-
-**Rule:** Modules control **access and dependencies** through module-info.java declarations.
-
-- **requires**: Declares dependency on another module
-- **exports**: Makes packages visible to other modules
-- **provides/uses**: Service provider framework
-
-```java
-// File: module-info.java in src/main/java
-module com.company.myapp {
-    // Dependencies - modules this module needs
-    requires java.base;          // Implicit - always available
-    requires java.logging;       // Explicit dependency
-    requires transitive java.sql; // Transitive - modules depending on myapp get java.sql too
-    
-    // Exports - packages visible to other modules
-    exports com.company.myapp.api;           // Public API
-    exports com.company.myapp.util to        // Qualified export
-        com.company.client,
-        com.company.test;
-    
-    // Services
-    provides com.company.myapp.api.Service 
-        with com.company.myapp.impl.ServiceImpl;
-    uses com.company.external.Logger;
-    
-    // Reflection access
-    opens com.company.myapp.model;           // For frameworks like Spring/Hibernate
-    opens com.company.myapp.config to 
-        com.fasterxml.jackson.databind;      // Qualified opens
-}
-```
-
-**Automatic vs Named Modules:**
-```java
-// Named module (has module-info.java)
-module com.example.named {
-    requires java.base;
-    exports com.example.api;
-}
-
-// Automatic module (JAR without module-info.java on module path)
-// Name derived from JAR filename: "commons-lang3-3.12.jar" -> "commons.lang3"
-module com.example.app {
-    requires commons.lang3;      // Automatic module
-    requires java.logging;       // Platform module
-}
-
-// Unnamed module (classpath, not module path)
-// Can read all other modules but cannot be required by named modules
-```
-
-**Migration strategies:**
-```java
-// Bottom-up: Convert dependencies first
-module leaf.utility {
-    exports leaf.util;  // No requires (except implicit java.base)
-}
-
-module middle.service {
-    requires leaf.utility;
-    exports middle.service;
-}
-
-// Top-down: Convert main app first, dependencies become automatic
-module main.application {
-    requires some.library;       // Automatic module
-    requires another.framework;  // Automatic module
-    exports main.app.api;
-}
-```
-
-**💡 Learning Tip:** Think "MODULE = CONTROLLED VISIBILITY" - modules explicitly declare what they need (requires) and what they share (exports).
-
-**Q:** What's the difference between a named module and an automatic module?  
-**A:** Named modules have module-info.java and explicit declarations; automatic modules are JARs on the module path without module-info.java, getting an automatic name derived from the JAR filename.
-
----
-
-## Concurrency and Threads
-
-
-## 🃏 ExecutorService with Lambdas - submit() Method Overloading
-
-**Rule:** ExecutorService.submit() is overloaded to handle both Runnable and Callable, with different return types.
-
-- `submit(Runnable)` → `Future<?>` (result is always null)
-- `submit(Callable<T>)` → `Future<T>` (result is of type T)
-
-```java
-ExecutorService executor = Executors.newFixedThreadPool(2);
-
-// Lambda matches Runnable - no return value
-Future<?> future1 = executor.submit(() -> {
-    System.out.println("Task executing...");
-    // No return statement
-});
-
-// Lambda matches Callable<String> - returns String
-Future<String> future2 = executor.submit(() -> {
-    Thread.sleep(1000);
-    return "Task completed!";  // Returns String
-});
-
-// Lambda matches Callable<Integer> - returns Integer
-Future<Integer> future3 = executor.submit(() -> {
-    int sum = 0;
-    for (int i = 1; i <= 10; i++) {
-        sum += i;
-    }
-    return sum;  // Returns Integer
-});
-
-// Retrieving results:
-try {
-    Object result1 = future1.get();     // null (Runnable returns nothing)
-    String result2 = future2.get();     // "Task completed!"
-    Integer result3 = future3.get();    // 55
-} catch (Exception e) {
-    e.printStackTrace();
-}
-```
-
-**Common Pitfalls:**
-```java
-// Pitfall 1: Forgetting return statement for Callable
-Callable<String> badTask = () -> {
-    String result = "Hello";
-    // Missing return statement - compile error!
-};
-
-// Pitfall 2: Runnable with return statement
-Runnable badRunnable = () -> {
-    return "Hello";  // ❌ Runnable must return void
-};
-
-// Pitfall 3: Ambiguous context
-// var task = () -> "Hello";  // ❌ Compiler can't infer target type
-Callable<String> task = () -> "Hello";  // ✅ Explicit target type
-```
-
-**💡 Learning Tip:** "Future tells the future" - Future<?> means no meaningful result, Future<T> means result of type T is coming.
-
-**Q:** What's the difference between submit(Runnable) and submit(Callable) return types?  
-**A:** submit(Runnable) returns Future<?> with null result, while submit(Callable<T>) returns Future<T> with a meaningful result of type T.
-
----
-
-## 🃏 Virtual Threads vs Platform Threads
-
-**Virtual Threads (Java 21):** Lightweight threads managed by JVM, not OS.
-
-```java
-// Creating virtual threads:
-Thread.ofVirtual().start(() -> System.out.println("Virtual thread"));
-Thread.startVirtualThread(() -> System.out.println("Virtual thread"));
-
-// Platform thread (traditional):
-Thread.ofPlatform().start(() -> System.out.println("Platform thread"));
-new Thread(() -> System.out.println("Platform thread")).start();
-
-// ExecutorService with virtual threads:
-try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    for (int i = 0; i < 1000; i++) {
-        executor.submit(() -> {
-            // Simulate I/O work
-            try { Thread.sleep(1000); } catch (InterruptedException e) {}
-            System.out.println("Task completed by " + Thread.currentThread());
-        });
-    }
-}
-```
-
-**Key Differences:**
-- **Virtual:** Millions possible, cheap creation, JVM-managed, perfect for I/O-bound tasks
-- **Platform:** ~1000s max, expensive creation, OS-managed, better for CPU-bound tasks
-
-**💡 Learning Tip:** Virtual = "Featherweight boxer" (many, fast), Platform = "Heavyweight boxer" (few, powerful).
-
----
-
-## 🃏 CyclicBarrier - Synchronization Point
-
-**Purpose:** Multiple threads wait for each other at a common barrier point.
-
-```java
-import java.util.concurrent.CyclicBarrier;
-
-// Create barrier for 3 threads
-CyclicBarrier barrier = new CyclicBarrier(3, () -> {
-    System.out.println("All threads reached barrier! Proceeding...");
-});
-
-Runnable task = () -> {
-    String name = Thread.currentThread().getName();
-    System.out.println(name + " working...");
-    
-    try {
-        Thread.sleep(1000); // Simulate work
-        System.out.println(name + " finished work, waiting at barrier");
-        
-        barrier.await(); // Wait here until all 3 threads arrive
-        
-        System.out.println(name + " proceeding after barrier!");
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
-};
-
-// Start 3 threads - they'll all wait at barrier, then proceed together
-Thread.startVirtualThread(task);
-Thread.startVirtualThread(task);  
-Thread.startVirtualThread(task);
-```
-
-**CyclicBarrier vs CountDownLatch:**
-```java
-// CyclicBarrier - reusable, threads wait for each other
-CyclicBarrier barrier = new CyclicBarrier(3);
-barrier.await(); // Thread waits for others
-// After all reach barrier, it resets for next use
-
-// CountDownLatch - one-time use, threads wait for countdown
-CountDownLatch latch = new CountDownLatch(3);
-latch.countDown(); // Decrement counter
-latch.await();     // Wait until counter reaches 0
-```
-
-**💡 Learning Tip:** CyclicBarrier = "Group photo" - everyone waits until all are ready, then proceed together. "Cyclic" = reusable for multiple rounds.
-
----
-
-## Records and Sealed Classes
-
-
-## 🃏 Sealed Classes (Java 21)
-
-**Purpose:** Restrict which classes can extend/implement a type.
-
-```java
-// Sealed class - only specific classes can extend
-public sealed class Shape 
-    permits Circle, Rectangle, Triangle {
-}
-
-// Permitted subclasses must be: final, sealed, or non-sealed
-final class Circle extends Shape {
-    private final double radius;
-    Circle(double radius) { this.radius = radius; }
-}
-
-sealed class Rectangle extends Shape 
-    permits Square {
-    protected final double width, height;
-    Rectangle(double width, double height) {
-        this.width = width;
-        this.height = height;
-    }
-}
-
-final class Square extends Rectangle {
-    Square(double side) { super(side, side); }
-}
-
-non-sealed class Triangle extends Shape {
-    // non-sealed allows further extension
-}
-
-class IsoscelesTriangle extends Triangle {} // ✅ OK - Triangle is non-sealed
-// class Pentagon extends Shape {} // ❌ Compile error - not permitted
-```
-
-**Sealed interfaces:**
-```java
-public sealed interface Vehicle 
-    permits Car, Truck, Motorcycle {
-}
-
-record Car(String model) implements Vehicle {}
-record Truck(int capacity) implements Vehicle {}
-record Motorcycle(boolean hasSidecar) implements Vehicle {}
-```
-
-**Pattern matching with sealed types:**
-```java
-static double calculateArea(Shape shape) {
-    return switch (shape) {
-        case Circle(var radius) -> Math.PI * radius * radius;
-        case Rectangle(var width, var height) -> width * height;
-        case Triangle t -> 10.0; // Simplified calculation
-        // No default needed - compiler knows all possibilities!
-    };
-}
-```
-
-**💡 Learning Tip:** Sealed = "Exclusive club" - only VIP classes (permits list) can join. Compiler knows all possibilities, enabling exhaustive pattern matching.
-
----
-
-## 🃏 Records (Java 21 Features)
-
-**Basic record syntax:**
-```java
-// Compact record declaration
-public record Person(String name, int age) {
-    // Automatically generates:
-    // - Constructor: Person(String name, int age)
-    // - Accessors: name(), age()
-    // - equals(), hashCode(), toString()
-}
-
-// Usage:
-Person person = new Person("Alice", 25);
-System.out.println(person.name()); // Alice
-System.out.println(person.age());  // 25
-```
-
-**Record with validation and custom methods:**
-```java
-public record BankAccount(String accountNumber, double balance) {
-    // Compact constructor for validation
-    public BankAccount {
-        if (balance < 0) {
-            throw new IllegalArgumentException("Balance cannot be negative");
-        }
-        if (accountNumber == null || accountNumber.isBlank()) {
-            throw new IllegalArgumentException("Account number required");
-        }
-    }
-    
-    // Custom methods allowed
-    public boolean isOverdrawn() {
-        return balance < 0;
-    }
-    
-    public BankAccount withdraw(double amount) {
-        return new BankAccount(accountNumber, balance - amount);
-    }
-}
-```
-
-**Records with pattern matching:**
-```java
-record Point(int x, int y) {}
-record ColoredPoint(Point point, String color) {}
-
-static String describe(Object obj) {
-    return switch (obj) {
-        case Point(int x, int y) -> "Point at (" + x + ", " + y + ")";
-        case ColoredPoint(Point(int x, int y), String color) -> 
-            color + " point at (" + x + ", " + y + ")";
-        default -> "Unknown";
-    };
-}
-```
-
-**💡 Learning Tip:** Records = "Data class on autopilot" - automatic constructor, accessors, equals/hashCode/toString. Perfect for immutable data carriers.
-
----
-
 ## 🃏 Sealed Classes - Location Requirements
 
 **Rule:** Sealed classes have **strict location requirements** for permitted subclasses based on module association.
@@ -1576,149 +1376,80 @@ public record Family(int size, String surname) {
 
 ---
 
-## I/O and NIO
+## 🃏 Static Field Access and Class Initialization
 
-
-## 🃏 Files.mismatch() and Path Operations
-
-**Files.mismatch()** - Compares two files **byte by byte**:
-- Returns **index of first mismatching byte** (0-based)
-- Returns **-1** if files are identical
-- Throws `IOException` if paths are invalid or inaccessible
+**Rule:** Accessing a static field only initializes the class that **declares** the field, not the class through which it's accessed.
+- Class initialization is triggered by accessing a field **declared by that class**.
+- Inherited static fields do **not** trigger subclass initialization.
+- The reference used (`Child.familyName`) doesn't matter - only the **declaring class** matters.
 
 ```java
-import java.nio.file.*;
-import java.io.IOException;
-
-try {
-    Path file1 = Path.of("document1.txt");  // Content: "Hello World"
-    Path file2 = Path.of("document2.txt");  // Content: "Hello Mars"
-    Path file3 = Path.of("document3.txt");  // Content: "Hello World"
-    
-    long result1 = Files.mismatch(file1, file2);  // Returns 6 (index of 'W' vs 'M')
-    long result2 = Files.mismatch(file1, file3);  // Returns -1 (identical)
-    
-    System.out.println("Mismatch at byte: " + result1);  // 6
-    System.out.println("Files identical: " + (result2 == -1));  // true
-    
-} catch (IOException e) {
-    System.out.println("Error reading files: " + e.getMessage());
+class Parent { 
+    static String familyName = "Johnson"; 
 }
-```
 
-**Other useful Path/Files operations (Java 21):**
-```java
-// Path operations:
-Path path = Path.of("users", "documents", "file.txt");
-Path absolute = path.toAbsolutePath();
-Path parent = path.getParent();
-Path filename = path.getFileName();
-
-// Files operations:
-boolean exists = Files.exists(path);
-boolean readable = Files.isReadable(path);
-long size = Files.size(path);
-String content = Files.readString(path);
-List<String> lines = Files.readAllLines(path);
-
-// Directory operations:
-Files.createDirectories(Path.of("new/nested/directory"));
-try (var stream = Files.walk(Path.of("."))) {
-    stream.filter(Files::isRegularFile)
-          .forEach(System.out::println);
-}
-```
-
-**💡 Learning Tip:** Mismatch = "Find the first difference" (-1 means no differences found).
-
----
-
-## 🃏 Java I/O - File Reading and Writing
-
-**Rule:** Java I/O provides **multiple ways** to read/write files with different performance characteristics.
-
-- **Files.readString()/writeString()**: Simple text file operations (Java 11+)
-- **BufferedReader/Writer**: Efficient line-by-line processing
-- **FileInputStream/OutputStream**: Byte-level operations
-
-```java
-import java.nio.file.*;
-import java.io.*;
-import java.util.List;
-
-// Simple file operations (Java 11+)
-Path textFile = Path.of("data.txt");
-
-// Write string to file
-String content = "Hello\nWorld\nJava";
-Files.writeString(textFile, content);
-
-// Read entire file as string
-String fileContent = Files.readString(textFile);
-System.out.println(fileContent);
-
-// Read all lines into List
-List<String> lines = Files.readAllLines(textFile);
-lines.forEach(System.out::println);
-
-// Write lines to file
-List<String> outputLines = List.of("Line 1", "Line 2", "Line 3");
-Files.write(textFile, outputLines);
-```
-
-**Buffered I/O for large files:**
-```java
-// Efficient reading with BufferedReader
-try (BufferedReader reader = Files.newBufferedReader(Path.of("large.txt"))) {
-    String line;
-    while ((line = reader.readLine()) != null) {
-        System.out.println(line);
+class Child extends Parent {
+    static { 
+        System.out.print("Child initialized"); 
     }
 }
 
-// Efficient writing with BufferedWriter
-try (BufferedWriter writer = Files.newBufferedWriter(Path.of("output.txt"))) {
-    writer.write("First line");
-    writer.newLine();
-    writer.write("Second line");
-    writer.newLine();
-}
-
-// Stream processing for very large files
-try (Stream<String> lines = Files.lines(Path.of("huge.txt"))) {
-    lines.filter(line -> line.contains("important"))
-         .map(String::toUpperCase)
-         .forEach(System.out::println);
-}
-```
-
-**Byte-level operations:**
-```java
-// Copy file using byte arrays
-try (FileInputStream in = new FileInputStream("source.dat");
-     FileOutputStream out = new FileOutputStream("dest.dat")) {
-    
-    byte[] buffer = new byte[1024];
-    int bytesRead;
-    while ((bytesRead = in.read(buffer)) != -1) {
-        out.write(buffer, 0, bytesRead);
+public class FamilyTest {
+    public static void main(String[] args) {
+        System.out.println(Child.familyName);  // Accesses inherited field
     }
 }
 
-// Files utility for copying
-Files.copy(Path.of("source.txt"), Path.of("destination.txt"), 
-          StandardCopyOption.REPLACE_EXISTING);
+// Output: Johnson
+// NOT: Child initializedJohnson
 ```
 
-**💡 Learning Tip:** Remember "FILES = SIMPLE, STREAMS = CONTROL" - Files class for simple operations, streams for fine-grained control and large files.
+**💡 Learning Tip:** Remember "DECLARES WINS" - only the class that declares the static field gets initialized, even when accessed through a subclass reference.
 
-**Q:** When should you use Files.readString() vs BufferedReader?  
-**A:** Use Files.readString() for small files when you need the entire content. Use BufferedReader for large files or when processing line-by-line to avoid memory issues.
+**Q:** Does accessing Child.familyName initialize the Child class if familyName is declared in Parent?  
+**A:** No — only Parent gets initialized because Parent declares the field. Child inherits it but doesn't declare it.
 
 ---
 
-## Localization and Date/Time
+## 🃏 Deque Stack vs Queue Operations
 
+**Rule:** Deque can act as both **Stack (LIFO)** and **Queue (FIFO)** with different method behaviors.
+- **Stack operations**: `push()` and `pop()` work at the **front/head** (LIFO - Last In First Out).
+- **Queue operations**: `offer()/add()` at **tail**, `poll()/remove()` at **head** (FIFO - First In First Out).
+- **Mixed usage** can cause confusion - know which end each method operates on.
+
+```java
+public class FamilyLineup {
+    public static void main(String[] args) {
+        Deque<String> familyLine = new ArrayDeque<>();
+        
+        // Using Stack operations (all work at FRONT/HEAD)
+        familyLine.push("Father");    // [Father]
+        familyLine.push("Mother");    // [Mother, Father] - Mother at front
+        familyLine.push("Child");     // [Child, Mother, Father] - Child at front
+        
+        // Mixed operations - be careful!
+        System.out.println(familyLine.pollFirst());  // Child (removes from front/head)
+        System.out.println(familyLine.poll());       // Mother (poll() = pollFirst(), removes from front/head)
+        System.out.println(familyLine.pollLast());   // Father (removes from back/tail)
+        
+        // Output:
+        // Child
+        // Mother  
+        // Father
+    }
+}
+
+// Stack view: [Child, Mother, Father] (Child is top/front)
+// Queue view: [Child, Mother, Father] (Child is head, Father is tail)
+```
+
+**💡 Learning Tip:** Remember "STACK FRONT, QUEUE ENDS" - Stack operations (push/pop) work at front only, Queue operations work at opposite ends (add tail, remove head).
+
+**Q:** If you push three elements then call pollFirst(), poll(), and pollLast(), what's the removal order?  
+**A:** First element pushed, second element pushed, third element pushed - because pollFirst() and poll() both remove from head, pollLast() from tail.
+
+---
 
 ## 🃏 LocalDate and LocalTime Operations (Date-Time API)
 
@@ -1773,148 +1504,104 @@ System.out.println("Hours since lunch: " + between.toHours());
 
 ---
 
-## 🃏 Localization - Locale and Resource Bundles
+## 🃏 Map Operations and Merge Method
 
-**Rule:** Localization uses **Locale** for region/language and **ResourceBundle** for externalized text.
+**Rule:** Map provides various methods for **conditional updates** and **bulk operations**.
 
-- **Locale**: Represents language and country (e.g., en_US, fr_FR)
-- **ResourceBundle**: Loads localized text from properties files
-- **Fallback mechanism**: Searches for most specific to most general
+- **compute methods**: Update based on key/value computation
+- **merge()**: Combine new value with existing value using a function
+- **putIfAbsent()**: Only put if key doesn't exist
 
 ```java
-import java.util.*;
-import java.text.NumberFormat;
-import java.time.format.DateTimeFormatter;
+Map<String, Integer> scores = new HashMap<>();
+scores.put("Alice", 85);
+scores.put("Bob", 92);
 
-// Creating Locales
-Locale english = Locale.ENGLISH;                    // en
-Locale french = Locale.FRENCH;                      // fr  
-Locale usEnglish = Locale.US;                       // en_US
-Locale canadianFrench = Locale.CANADA_FRENCH;       // fr_CA
-Locale custom = new Locale("es", "MX");             // es_MX (Spanish Mexico)
+// merge() - combines values when key exists, inserts when key doesn't exist
+scores.merge("Alice", 10, Integer::sum);    // 85 + 10 = 95 (key exists)
+scores.merge("Charlie", 88, Integer::sum);  // Just inserts 88 (key doesn't exist)
 
-// Resource bundles (properties files)
-// messages_en.properties: greeting=Hello
-// messages_fr.properties: greeting=Bonjour
-// messages.properties: greeting=Hi (default fallback)
+System.out.println(scores); // {Alice=95, Bob=92, Charlie=88}
 
-ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.FRENCH);
-String greeting = bundle.getString("greeting");  // "Bonjour"
+// computeIfAbsent - only compute if key missing
+scores.computeIfAbsent("David", k -> k.length() * 10);  // David=50 (5 chars * 10)
+scores.computeIfAbsent("Alice", k -> k.length() * 10);  // No change (Alice exists)
 
-// Fallback search order for Locale("fr", "CA"):
-// 1. messages_fr_CA.properties
-// 2. messages_fr.properties  
-// 3. messages.properties (default)
+// computeIfPresent - only compute if key exists  
+scores.computeIfPresent("Bob", (k, v) -> v + 5);        // Bob=97 (92 + 5)
+scores.computeIfPresent("Eve", (k, v) -> v + 5);        // No change (Eve doesn't exist)
+
+// compute - always computes (can return null to remove)
+scores.compute("Alice", (k, v) -> v == null ? 100 : v - 10);  // Alice=85 (95 - 10)
 ```
 
-**Number and currency formatting:**
+**Bulk operations:**
 ```java
-double amount = 1234.56;
+Map<String, String> defaults = Map.of("theme", "dark", "lang", "en");
+Map<String, String> userPrefs = new HashMap<>();
+userPrefs.put("theme", "light");
 
-// Number formatting per locale
-NumberFormat usNumber = NumberFormat.getNumberInstance(Locale.US);
-NumberFormat frenchNumber = NumberFormat.getNumberInstance(Locale.FRANCE);
+// putAll vs merge behavior
+userPrefs.putAll(defaults);  // Overwrites existing keys
+// Result: {theme=dark, lang=en} - theme overwritten!
 
-System.out.println(usNumber.format(amount));     // 1,234.56
-System.out.println(frenchNumber.format(amount)); // 1 234,56
-
-// Currency formatting
-NumberFormat usCurrency = NumberFormat.getCurrencyInstance(Locale.US);
-NumberFormat euroCurrency = NumberFormat.getCurrencyInstance(Locale.FRANCE);
-
-System.out.println(usCurrency.format(amount));   // $1,234.56
-System.out.println(euroCurrency.format(amount)); // 1 234,56 €
-
-// Percentage formatting
-NumberFormat percent = NumberFormat.getPercentInstance(Locale.US);
-System.out.println(percent.format(0.75));        // 75%
+// Better: merge each entry
+defaults.forEach((k, v) -> userPrefs.merge(k, v, (old, new_) -> old));
+// Result: {theme=light, lang=en} - keeps existing theme
 ```
 
-**Date/time formatting:**
-```java
-LocalDateTime now = LocalDateTime.now();
+**💡 Learning Tip:** Think "MERGE = SMART PUT" - merge() handles both insertion and updating with custom logic.
 
-// US format: MM/dd/yyyy
-DateTimeFormatter usFormat = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
-                                             .withLocale(Locale.US);
-
-// French format: dd/MM/yyyy  
-DateTimeFormatter frenchFormat = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
-                                                 .withLocale(Locale.FRANCE);
-
-System.out.println(now.format(usFormat));     // 03/20/2024
-System.out.println(now.format(frenchFormat)); // 20/03/2024
-```
-
-**💡 Learning Tip:** Think "LOCALE = WHERE, BUNDLE = WHAT" - Locale specifies location/language, ResourceBundle provides localized content with automatic fallback.
-
-**Q:** If you request a ResourceBundle for Locale("de", "CH") but only have messages_de.properties and messages.properties, which file is used?  
-**A:** messages_de.properties — the search falls back from de_CH to de to default, using the most specific match found.
+**Q:** What happens when you call merge() with a key that doesn't exist in the map?  
+**A:** The new value is simply inserted (put), and the merge function is not called since there's no existing value to merge with.
 
 ---
 
-## General Java Syntax and Behavior
+## 🃏 Set Operations and Characteristics
 
+**Rule:** Set implementations have **different ordering and performance characteristics**.
 
-# Java OCP 21 Flashcards
-
-## 🃏 Generics: Bounded Wildcards (PECS Rule)
-
-**PECS Rule:** **P**roducer **E**xtends, **C**onsumer **S**uper
-
-- `? extends T`: **READ-ONLY** - Can read items of type T or its subtypes. Cannot add anything (except `null`)
-- `? super T`: **WRITE-ONLY** - Can write T or its subtypes. Cannot safely read (except `Object`)
+- **HashSet**: No ordering, O(1) operations, allows null
+- **LinkedHashSet**: Insertion order, O(1) operations, allows null  
+- **TreeSet**: Natural/comparator ordering, O(log n) operations, no null
 
 ```java
-// Producer Extends - Reading from a collection
-List<? extends Number> numbers = List.of(1, 2.0, 3L);
-Number n = numbers.get(0);    // ✅ OK - can read as Number
-// numbers.add(3);            // ❌ Compile error - cannot write
+// HashSet - no ordering guaranteed
+Set<String> hashSet = new HashSet<>();
+hashSet.addAll(List.of("zebra", "apple", "banana"));
+System.out.println(hashSet); // Could be: [banana, apple, zebra] (any order)
 
-// Consumer Super - Writing to a collection  
-List<? super Integer> values = new ArrayList<Number>();
-values.add(10);       // ✅ OK - can write Integer/subtypes
-values.add(42);       // ✅ OK - can write Integer/subtypes
-// Integer i = values.get(0);  // ❌ Compile error - can only read as Object
-Object obj = values.get(0);   // ✅ OK - can read as Object
+// LinkedHashSet - maintains insertion order
+Set<String> linkedSet = new LinkedHashSet<>();
+linkedSet.addAll(List.of("zebra", "apple", "banana"));
+System.out.println(linkedSet); // [zebra, apple, banana] (insertion order)
+
+// TreeSet - natural ordering (sorted)
+Set<String> treeSet = new TreeSet<>();
+treeSet.addAll(List.of("zebra", "apple", "banana"));
+System.out.println(treeSet); // [apple, banana, zebra] (sorted)
+
+// Set operations
+Set<Integer> set1 = new HashSet<>(List.of(1, 2, 3, 4));
+Set<Integer> set2 = new HashSet<>(List.of(3, 4, 5, 6));
+
+// Union (all elements from both sets)
+Set<Integer> union = new HashSet<>(set1);
+union.addAll(set2);  // {1, 2, 3, 4, 5, 6}
+
+// Intersection (common elements)
+Set<Integer> intersection = new HashSet<>(set1);
+intersection.retainAll(set2);  // {3, 4}
+
+// Difference (elements in set1 but not set2)
+Set<Integer> difference = new HashSet<>(set1);
+difference.removeAll(set2);  // {1, 2}
 ```
 
-**💡 Learning Tip:** Think of wildcards as "one-way streets" - extends for reading OUT, super for writing IN.
+**💡 Learning Tip:** Remember "HASH-LINKED-TREE" order: HashSet (no order), LinkedHashSet (insertion order), TreeSet (sorted order).
 
----
-
-## 🃏 StringBuilder Reference Behavior
-
-Java is **pass-by-value** for references. You get a copy of the reference, not the reference itself.
-
-```java
-public class StringBuilderExample {
-    static void modifyContent(StringBuilder sb) {
-        sb.append(" modified");     // ✅ Modifies the object - caller sees this
-        System.out.println("Inside method after append: " + sb);
-    }
-    
-    static void reassignReference(StringBuilder sb) {
-        sb.append(" first");        // ✅ Modifies original object
-        sb = new StringBuilder("completely new");  // ❌ Only changes local copy of reference
-        sb.append(" content");      // ❌ Modifies the new object, not original
-        System.out.println("Inside method after reassign: " + sb);
-    }
-    
-    public static void main(String[] args) {
-        StringBuilder original = new StringBuilder("start");
-        
-        modifyContent(original);
-        System.out.println("After modifyContent: " + original);  // "start modified"
-        
-        reassignReference(original);  
-        System.out.println("After reassignReference: " + original);  // "start modified first"
-        // Note: "completely new content" is lost!
-    }
-}
-```
-
-**💡 Learning Tip:** You can change the object's content through the reference, but you can't change where the original reference points.
+**Q:** Which Set implementation should you use if you need both fast lookups and predictable iteration order?  
+**A:** LinkedHashSet — provides O(1) operations like HashSet but maintains insertion order unlike HashSet.
 
 ---
 
@@ -2065,5 +1752,249 @@ System.out.println(c.equals(d));   // true (value comparison)
 
 **Q:** What's the difference between `Math.round()`, `Math.ceil()`, and `Math.floor()`?  
 **A:** `round()` rounds to nearest integer, `ceil()` always rounds up, `floor()` always rounds down.
+
+---
+
+## 🃏 Module System - Basic Declaration and Dependencies
+
+**Rule:** Modules control **access and dependencies** through module-info.java declarations.
+
+- **requires**: Declares dependency on another module
+- **exports**: Makes packages visible to other modules
+- **provides/uses**: Service provider framework
+
+```java
+// File: module-info.java in src/main/java
+module com.company.myapp {
+    // Dependencies - modules this module needs
+    requires java.base;          // Implicit - always available
+    requires java.logging;       // Explicit dependency
+    requires transitive java.sql; // Transitive - modules depending on myapp get java.sql too
+    
+    // Exports - packages visible to other modules
+    exports com.company.myapp.api;           // Public API
+    exports com.company.myapp.util to        // Qualified export
+        com.company.client,
+        com.company.test;
+    
+    // Services
+    provides com.company.myapp.api.Service 
+        with com.company.myapp.impl.ServiceImpl;
+    uses com.company.external.Logger;
+    
+    // Reflection access
+    opens com.company.myapp.model;           // For frameworks like Spring/Hibernate
+    opens com.company.myapp.config to 
+        com.fasterxml.jackson.databind;      // Qualified opens
+}
+```
+
+**Automatic vs Named Modules:**
+```java
+// Named module (has module-info.java)
+module com.example.named {
+    requires java.base;
+    exports com.example.api;
+}
+
+// Automatic module (JAR without module-info.java on module path)
+// Name derived from JAR filename: "commons-lang3-3.12.jar" -> "commons.lang3"
+module com.example.app {
+    requires commons.lang3;      // Automatic module
+    requires java.logging;       // Platform module
+}
+
+// Unnamed module (classpath, not module path)
+// Can read all other modules but cannot be required by named modules
+```
+
+**Migration strategies:**
+```java
+// Bottom-up: Convert dependencies first
+module leaf.utility {
+    exports leaf.util;  // No requires (except implicit java.base)
+}
+
+module middle.service {
+    requires leaf.utility;
+    exports middle.service;
+}
+
+// Top-down: Convert main app first, dependencies become automatic
+module main.application {
+    requires some.library;       // Automatic module
+    requires another.framework;  // Automatic module
+    exports main.app.api;
+}
+```
+
+**💡 Learning Tip:** Think "MODULE = CONTROLLED VISIBILITY" - modules explicitly declare what they need (requires) and what they share (exports).
+
+**Q:** What's the difference between a named module and an automatic module?  
+**A:** Named modules have module-info.java and explicit declarations; automatic modules are JARs on the module path without module-info.java, getting an automatic name derived from the JAR filename.
+
+---
+
+## 🃏 Java I/O - File Reading and Writing
+
+**Rule:** Java I/O provides **multiple ways** to read/write files with different performance characteristics.
+
+- **Files.readString()/writeString()**: Simple text file operations (Java 11+)
+- **BufferedReader/Writer**: Efficient line-by-line processing
+- **FileInputStream/OutputStream**: Byte-level operations
+
+```java
+import java.nio.file.*;
+import java.io.*;
+import java.util.List;
+
+// Simple file operations (Java 11+)
+Path textFile = Path.of("data.txt");
+
+// Write string to file
+String content = "Hello\nWorld\nJava";
+Files.writeString(textFile, content);
+
+// Read entire file as string
+String fileContent = Files.readString(textFile);
+System.out.println(fileContent);
+
+// Read all lines into List
+List<String> lines = Files.readAllLines(textFile);
+lines.forEach(System.out::println);
+
+// Write lines to file
+List<String> outputLines = List.of("Line 1", "Line 2", "Line 3");
+Files.write(textFile, outputLines);
+```
+
+**Buffered I/O for large files:**
+```java
+// Efficient reading with BufferedReader
+try (BufferedReader reader = Files.newBufferedReader(Path.of("large.txt"))) {
+    String line;
+    while ((line = reader.readLine()) != null) {
+        System.out.println(line);
+    }
+}
+
+// Efficient writing with BufferedWriter
+try (BufferedWriter writer = Files.newBufferedWriter(Path.of("output.txt"))) {
+    writer.write("First line");
+    writer.newLine();
+    writer.write("Second line");
+    writer.newLine();
+}
+
+// Stream processing for very large files
+try (Stream<String> lines = Files.lines(Path.of("huge.txt"))) {
+    lines.filter(line -> line.contains("important"))
+         .map(String::toUpperCase)
+         .forEach(System.out::println);
+}
+```
+
+**Byte-level operations:**
+```java
+// Copy file using byte arrays
+try (FileInputStream in = new FileInputStream("source.dat");
+     FileOutputStream out = new FileOutputStream("dest.dat")) {
+    
+    byte[] buffer = new byte[1024];
+    int bytesRead;
+    while ((bytesRead = in.read(buffer)) != -1) {
+        out.write(buffer, 0, bytesRead);
+    }
+}
+
+// Files utility for copying
+Files.copy(Path.of("source.txt"), Path.of("destination.txt"), 
+          StandardCopyOption.REPLACE_EXISTING);
+```
+
+**💡 Learning Tip:** Remember "FILES = SIMPLE, STREAMS = CONTROL" - Files class for simple operations, streams for fine-grained control and large files.
+
+**Q:** When should you use Files.readString() vs BufferedReader?  
+**A:** Use Files.readString() for small files when you need the entire content. Use BufferedReader for large files or when processing line-by-line to avoid memory issues.
+
+---
+
+## 🃏 Localization - Locale and Resource Bundles
+
+**Rule:** Localization uses **Locale** for region/language and **ResourceBundle** for externalized text.
+
+- **Locale**: Represents language and country (e.g., en_US, fr_FR)
+- **ResourceBundle**: Loads localized text from properties files
+- **Fallback mechanism**: Searches for most specific to most general
+
+```java
+import java.util.*;
+import java.text.NumberFormat;
+import java.time.format.DateTimeFormatter;
+
+// Creating Locales
+Locale english = Locale.ENGLISH;                    // en
+Locale french = Locale.FRENCH;                      // fr  
+Locale usEnglish = Locale.US;                       // en_US
+Locale canadianFrench = Locale.CANADA_FRENCH;       // fr_CA
+Locale custom = new Locale("es", "MX");             // es_MX (Spanish Mexico)
+
+// Resource bundles (properties files)
+// messages_en.properties: greeting=Hello
+// messages_fr.properties: greeting=Bonjour
+// messages.properties: greeting=Hi (default fallback)
+
+ResourceBundle bundle = ResourceBundle.getBundle("messages", Locale.FRENCH);
+String greeting = bundle.getString("greeting");  // "Bonjour"
+
+// Fallback search order for Locale("fr", "CA"):
+// 1. messages_fr_CA.properties
+// 2. messages_fr.properties  
+// 3. messages.properties (default)
+```
+
+**Number and currency formatting:**
+```java
+double amount = 1234.56;
+
+// Number formatting per locale
+NumberFormat usNumber = NumberFormat.getNumberInstance(Locale.US);
+NumberFormat frenchNumber = NumberFormat.getNumberInstance(Locale.FRANCE);
+
+System.out.println(usNumber.format(amount));     // 1,234.56
+System.out.println(frenchNumber.format(amount)); // 1 234,56
+
+// Currency formatting
+NumberFormat usCurrency = NumberFormat.getCurrencyInstance(Locale.US);
+NumberFormat euroCurrency = NumberFormat.getCurrencyInstance(Locale.FRANCE);
+
+System.out.println(usCurrency.format(amount));   // $1,234.56
+System.out.println(euroCurrency.format(amount)); // 1 234,56 €
+
+// Percentage formatting
+NumberFormat percent = NumberFormat.getPercentInstance(Locale.US);
+System.out.println(percent.format(0.75));        // 75%
+```
+
+**Date/time formatting:**
+```java
+LocalDateTime now = LocalDateTime.now();
+
+// US format: MM/dd/yyyy
+DateTimeFormatter usFormat = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+                                             .withLocale(Locale.US);
+
+// French format: dd/MM/yyyy  
+DateTimeFormatter frenchFormat = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+                                                 .withLocale(Locale.FRANCE);
+
+System.out.println(now.format(usFormat));     // 03/20/2024
+System.out.println(now.format(frenchFormat)); // 20/03/2024
+```
+
+**💡 Learning Tip:** Think "LOCALE = WHERE, BUNDLE = WHAT" - Locale specifies location/language, ResourceBundle provides localized content with automatic fallback.
+
+**Q:** If you request a ResourceBundle for Locale("de", "CH") but only have messages_de.properties and messages.properties, which file is used?  
+**A:** messages_de.properties — the search falls back from de_CH to de to default, using the most specific match found.
 
 ---
