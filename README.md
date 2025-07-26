@@ -961,3 +961,131 @@ try (Resource1 res1 = new Resource1();
 2. **Finally block execution** - Runs even when catch throws new exception  
 3. **Exception masking** - New exception in catch/finally masks original
 4. **Resource closing order** - Always reverse of creation order
+
+**Rule:** Sealed classes have **strict location requirements** for permitted subclasses based on module association.
+- **Named module**: All permitted classes must be in the **same module** as the sealed class.
+- **Unnamed module**: All permitted classes must be in the **same package** as the sealed class.
+```java
+// Named module example
+module com.example.shapes {
+    exports com.example.shapes;
+}
+
+// In named module - permitted classes must be in same module
+package com.example.shapes;
+public sealed class Shape permits Circle, Rectangle { }  // ✓ Valid
+
+// In different module - compile error
+module com.other.module { }
+package com.other.shapes;
+public final class Triangle extends Shape { }  // ✗ Compile error
+
+// Unnamed module example (no module-info.java)
+package com.example.animals;
+public sealed class Animal permits Dog, Cat { }  // ✓ Valid
+
+package com.different.package;
+public final class Bird extends Animal { }  // ✗ Compile error - different package
+```
+**💡 Learning Tip:**  
+Think "SAME BOUNDARY" - named modules enforce module boundary, unnamed modules enforce package boundary.
+**Q:** Can a sealed class in a named module permit a subclass from a different module?  
+**A:** No — all permitted subclasses must be in the same module as the sealed class, or a compile-time error occurs.
+---
+
+**Rule:** Records are **restricted classes** that define simple aggregates with **implicit components**.
+- Record declarations create **private final fields** and **public accessor methods**.
+- Records **extend Record class** and are **implicitly final**.
+- **Cannot be abstract, sealed, or non-sealed** and **cannot extend other classes**.
+```java
+public record Parent(int age, String name) { }  // Record header with components
+
+// Roughly equivalent to:
+public final class Parent extends Record {
+    private final int age;     // Component field
+    private final String name; // Component field
+    
+    public Parent(int age, String name) {  // Canonical constructor
+        this.age = age;
+        this.name = name;
+    }
+    
+    public int age() { return age; }      // Accessor (not getAge())
+    public String name() { return name; } // Accessor (not getName())
+    
+    // hashCode(), equals(), toString() provided by compiler
+}
+```
+**💡 Learning Tip:**  
+Think "SIMPLE AGGREGATE" - records automatically generate fields, constructor, accessors, and Object methods.
+**Q:** Do record accessor methods follow JavaBeans naming convention?  
+**A:** No — accessors have the same name as the field (age(), name()), not prefixed with "get".
+---
+
+**Rule:** Records have **strict constructor rules** with canonical and non-canonical forms.
+- **Canonical constructor**: Takes all record components as parameters.
+- **Compact form**: No parameter list, implicit field initialization after body.
+- **Non-canonical constructors**: Must call canonical or another constructor on first line.
+```java
+public record Child(int age, String parent) {
+    // Compact canonical constructor
+    public Child {  // No parameter list
+        if (age < 0) throw new IllegalArgumentException();
+        // Fields implicitly initialized after this block
+    }
+    
+    // Non-canonical constructors must delegate
+    public Child() {
+        this(0, "Unknown");  // Must call canonical or another constructor
+    }
+    
+    public Child(int age) {
+        this(age, "Unknown");  // Must delegate
+    }
+}
+
+// This would cause compile error:
+public record Child(int age, String parent) {
+    public Child {  // Compact form
+        age = age + 1;  // ✗ Cannot assign to parameter in compact form
+    }
+    
+    public Child(int age, String parent) {  // ✗ Cannot have both compact and regular canonical
+        this.age = age;
+    }
+}
+```
+**💡 Learning Tip:**  
+Remember "DELEGATE OR CANONICAL" - non-canonical constructors must delegate, canonical can be compact or regular.
+**Q:** Can a record have both compact and regular forms of the canonical constructor?  
+**A:** No — you can only have one canonical constructor, either in compact or regular form, not both.
+---
+
+**Rule:** Records have **specific restrictions** on fields, methods, and component names.
+- **Cannot declare instance fields** (static fields allowed).
+- **Cannot have instance initializers** (static initializers allowed).
+- **Cannot use reserved component names** from Object class methods.
+```java
+public record Family(int size, String surname) {
+    static String defaultSurname = "Unknown";  // ✓ Static field allowed
+    static { defaultSurname = "Smith"; }       // ✓ Static initializer allowed
+    
+    // int extraField;                         // ✗ Instance field not allowed
+    // { size = 10; }                          // ✗ Instance initializer not allowed
+    
+    public static String getDefaultSurname() { return defaultSurname; }  // ✓ Static method
+    public String fullInfo() { return size + " " + surname; }            // ✓ Instance method
+    
+    // public abstract void process();         // ✗ Abstract methods not allowed
+    // public native void nativeMethod();      // ✗ Native methods not allowed
+}
+
+// These component names would cause compile errors:
+// public record BadChild(String clone, int hashCode) { }     // ✗ Reserved names
+// public record BadParent(Object toString, String wait) { }  // ✗ Reserved names
+```
+**💡 Learning Tip:**  
+Think "NO INSTANCE STUFF" - no instance fields, initializers, or Object method names as components.
+**Q:** Can records have static fields and methods?  
+**A:** Yes — records can have static fields, methods, and initializers, but no instance fields or initializers.
+---
