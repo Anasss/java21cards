@@ -809,6 +809,121 @@ Stream.of("a", "b", "c").count();   // ✅ OK - new stream
 
 ---
 
+## 🃏 Lambda Target Types - Runnable vs Callable
+
+**Rule:** Java determines which functional interface a lambda implements based on **target type** - the expected type from the context where the lambda is used.
+
+- **Runnable**: `void run()` - lambda returns **no value**
+- **Callable<T>**: `T call()` - lambda **returns a value** of type T
+
+```java
+// Same lambda expression, different target types
+() -> System.out.println("Hello")
+
+// Target type: Runnable (void return)
+Runnable task1 = () -> System.out.println("Hello");        // ✅ Matches void run()
+Thread thread = new Thread(() -> System.out.println("Hello")); // ✅ Constructor expects Runnable
+
+// Target type: Callable<Void> (explicit Void return)
+Callable<Void> task2 = () -> {
+    System.out.println("Hello");
+    return null;  // Must return null for Void
+};
+
+// Different lambda - returns a value
+() -> "Hello World"
+
+// Target type: Callable<String> (String return)
+Callable<String> task3 = () -> "Hello World";              // ✅ Matches String call()
+// Runnable task4 = () -> "Hello World";                   // ❌ Compile error - void expected
+```
+
+**Functional Interface Signatures:**
+```java
+@FunctionalInterface
+public interface Runnable {
+    void run();  // No parameters, void return
+}
+
+@FunctionalInterface  
+public interface Callable<V> {
+    V call() throws Exception;  // No parameters, returns V, can throw Exception
+}
+```
+
+**💡 Learning Tip:** "Runnable runs and forgets, Callable calls and tells" - Runnable for actions, Callable for computations with results.
+
+**Q:** What determines whether a lambda implements Runnable or Callable?  
+**A:** The **target type** of the assignment. A lambda returning **no value** matches Runnable, while a lambda **returning a value** matches Callable<T>.
+
+---
+
+## 🃏 ExecutorService with Lambdas - submit() Method Overloading
+
+**Rule:** ExecutorService.submit() is overloaded to handle both Runnable and Callable, with different return types.
+
+- `submit(Runnable)` → `Future<?>` (result is always null)
+- `submit(Callable<T>)` → `Future<T>` (result is of type T)
+
+```java
+ExecutorService executor = Executors.newFixedThreadPool(2);
+
+// Lambda matches Runnable - no return value
+Future<?> future1 = executor.submit(() -> {
+    System.out.println("Task executing...");
+    // No return statement
+});
+
+// Lambda matches Callable<String> - returns String
+Future<String> future2 = executor.submit(() -> {
+    Thread.sleep(1000);
+    return "Task completed!";  // Returns String
+});
+
+// Lambda matches Callable<Integer> - returns Integer
+Future<Integer> future3 = executor.submit(() -> {
+    int sum = 0;
+    for (int i = 1; i <= 10; i++) {
+        sum += i;
+    }
+    return sum;  // Returns Integer
+});
+
+// Retrieving results:
+try {
+    Object result1 = future1.get();     // null (Runnable returns nothing)
+    String result2 = future2.get();     // "Task completed!"
+    Integer result3 = future3.get();    // 55
+} catch (Exception e) {
+    e.printStackTrace();
+}
+```
+
+**Common Pitfalls:**
+```java
+// Pitfall 1: Forgetting return statement for Callable
+Callable<String> badTask = () -> {
+    String result = "Hello";
+    // Missing return statement - compile error!
+};
+
+// Pitfall 2: Runnable with return statement
+Runnable badRunnable = () -> {
+    return "Hello";  // ❌ Runnable must return void
+};
+
+// Pitfall 3: Ambiguous context
+// var task = () -> "Hello";  // ❌ Compiler can't infer target type
+Callable<String> task = () -> "Hello";  // ✅ Explicit target type
+```
+
+**💡 Learning Tip:** "Future tells the future" - Future<?> means no meaningful result, Future<T> means result of type T is coming.
+
+**Q:** What's the difference between submit(Runnable) and submit(Callable) return types?  
+**A:** submit(Runnable) returns Future<?> with null result, while submit(Callable<T>) returns Future<T> with a meaningful result of type T.
+
+---
+
 ## 🃏 Module Migration Strategies: Bottom-Up vs Top-Down
 
 **Bottom-Up:** Start with **leaf dependencies** (no dependencies), work up to main app.  
